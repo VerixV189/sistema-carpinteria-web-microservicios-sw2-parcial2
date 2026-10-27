@@ -1,0 +1,24 @@
+/* Design tokens compartidos (packages/ui-tokens) servidos desde el shell */
+:root {
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --color-primary: #8B5A2B;
+  --color-primary-dark: #6B4423;
+  --color-accent: #D4A574;
+  --color-bg: #FAF7F2;
+  --color-surface: #FFFFFF;
+  --color-text: #2C1810;
+  --color-text-muted: #8C7B6E;
+  --color-success: #27AE60;
+  --color-danger: #E74C3C;
+  --color-warning: #F39C12;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(44, 24, 16, 0.08);
+  --shadow-md: 0 4px 12px rgba(44, 24, 16, 0.12);
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+}

@@ -1,0 +1,21 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  background: #F5F1EC;
+  color: #3B2F2F;
+  -webkit-tap-highlight-color: transparent;
+}
+button { touch-action: manipulation; }
+a { -webkit-tap-highlight-color: transparent; }
+
+/* El asistente empuja el contenido en escritorio (no lo tapa) */
+.content-zone { transition: margin-right .25s ease-out; }
+@media (min-width: 941px) {
+  .content-zone.con-chat { margin-right: 400px; }
+}
+/* En pantallas chicas el chat cubre la pantalla: fondo oscuro detrás */
+.chat-fondo { display: none; }
+@media (max-width: 940px) {
+  .chat-fondo { display: block !important; }
+}
