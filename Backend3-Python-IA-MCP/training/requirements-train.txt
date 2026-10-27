@@ -1,0 +1,4 @@
+# Solo para el entorno de entrenamiento local — NO va al contenedor.
+ultralytics>=8.3.40
+torch>=2.6.0
+torchvision>=0.21.0

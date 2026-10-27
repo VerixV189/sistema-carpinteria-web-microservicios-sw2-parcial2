@@ -1,0 +1,13 @@
+venv
+.venv
+__pycache__
+*.pyc
+.env
+tests
+.git
+.pytest_cache
+training/dataset
+training/dataset_split
+training/.venv-train
+runs
+*.pt
