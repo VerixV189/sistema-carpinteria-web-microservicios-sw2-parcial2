@@ -1,0 +1,16 @@
+node_modules/
+build/
+dist/
+dist-mfe/
+.svelte-kit/
+.env
+.env.*
+!.env.example
+*.local
+*.tsbuildinfo
+*.timestamp-*
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
