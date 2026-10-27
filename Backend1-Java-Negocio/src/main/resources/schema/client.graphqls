@@ -1,0 +1,37 @@
+# CU1 — Gestionar Cliente
+
+type Client {
+  id: ID!
+  name: String!
+  email: String!
+  phone: String
+  address: String
+  segment: String
+  createdAt: String
+}
+
+input CreateClientInput {
+  name: String!
+  email: String!
+  phone: String
+  address: String
+}
+
+input UpdateClientInput {
+  name: String
+  email: String
+  phone: String
+  address: String
+  segment: String
+}
+
+type Query {
+  clients: [Client!]!
+  client(id: ID!): Client
+}
+
+type Mutation {
+  createClient(input: CreateClientInput!): Client!
+  updateClient(id: ID!, input: UpdateClientInput!): Client
+  deleteClient(id: ID!): Boolean!
+}

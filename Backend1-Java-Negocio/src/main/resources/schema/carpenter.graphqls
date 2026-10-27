@@ -1,0 +1,43 @@
+# CU2 — Gestionar Carpintero
+
+type Carpenter {
+  id: ID!
+  name: String!
+  email: String!
+  phone: String
+  specialty: String!
+  yearsExperience: Int!
+  hourlyRate: Float!
+  active: Boolean!
+}
+
+input CreateCarpenterInput {
+  name: String!
+  email: String!
+  phone: String
+  specialty: String!
+  yearsExperience: Int = 0
+  hourlyRate: Float = 0
+}
+
+input UpdateCarpenterInput {
+  name: String
+  email: String
+  phone: String
+  specialty: String
+  yearsExperience: Int
+  hourlyRate: Float
+  active: Boolean
+}
+
+extend type Query {
+  carpenters: [Carpenter!]!
+  carpenter(id: ID!): Carpenter
+  carpenterWorkload(carpenterId: ID!): [Order!]!
+}
+
+extend type Mutation {
+  createCarpenter(input: CreateCarpenterInput!): Carpenter!
+  updateCarpenter(id: ID!, input: UpdateCarpenterInput!): Carpenter
+  deleteCarpenter(id: ID!): Boolean!
+}

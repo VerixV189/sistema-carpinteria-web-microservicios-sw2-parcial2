@@ -1,0 +1,120 @@
+# Pedidos (vinculado a cotizaciones CU3 y entregas CU4)
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  IN_PRODUCTION
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum StepStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+type OrderItem {
+  id: ID!
+  description: String!
+  furnitureType: String
+  woodType: String
+  quantity: Int!
+  unitPrice: Float!
+  dimensions: Dimensions
+}
+
+type Dimensions {
+  lengthM: Float
+  widthM: Float
+  heightM: Float
+}
+
+input DimensionsInput {
+  lengthM: Float
+  widthM: Float
+  heightM: Float
+}
+
+input OrderItemInput {
+  description: String!
+  furnitureType: String
+  woodType: String
+  quantity: Int!
+  unitPrice: Float
+  dimensions: DimensionsInput
+}
+
+type ProductionStep {
+  id: ID!
+  name: String!
+  status: StepStatus!
+  sequence: Int!
+  completedAt: String
+}
+
+type Order {
+  id: ID!
+  client: Client!
+  quotationId: String
+  description: String
+  status: OrderStatus!
+  totalPrice: Float!
+  deliveryDate: String
+  items: [OrderItem!]!
+  steps: [ProductionStep!]!
+  carpenters: [Carpenter!]!
+  delivery: Delivery
+  createdAt: String
+  deliveryType: DeliveryType
+  deliveryAddress: String
+  deliveryLat: Float
+  deliveryLng: Float
+}
+
+input CreateOrderInput {
+  clientId: ID!
+  quotationId: String
+  description: String
+  items: [OrderItemInput!]
+  deliveryType: DeliveryType
+  deliveryAddress: String
+  deliveryLat: Float
+  deliveryLng: Float
+}
+
+input DeliveryPreferenceInput {
+  deliveryType: DeliveryType
+  deliveryAddress: String
+  deliveryLat: Float
+  deliveryLng: Float
+}
+
+extend type Query {
+  orders(status: OrderStatus): [Order!]!
+  order(id: ID!): Order
+}
+
+extend type Mutation {
+  createOrder(input: CreateOrderInput!): Order!
+  updateOrderStatus(id: ID!, status: OrderStatus!): Order
+  assignCarpenter(orderId: ID!, carpenterId: ID!): Order
+  updateStepStatus(stepId: ID!, status: StepStatus!): ProductionStep
+  linkQuotation(orderId: ID!, quotationId: String!): Order
+  setDeliveryPreference(orderId: ID!, input: DeliveryPreferenceInput!): Order
+}
+
+type OrderStatusEvent {
+  id: ID!
+  clientId: ID!
+  quotationId: String
+  description: String
+  status: OrderStatus!
+  totalPrice: Float!
+  deliveryDate: String
+}
+
+type Subscription {
+  orderStatusChanged: OrderStatusEvent!
+}

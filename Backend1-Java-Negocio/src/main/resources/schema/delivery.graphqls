@@ -1,0 +1,56 @@
+# CU4 — Administrar Fecha de Entrega
+
+enum TimeSlot {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum DeliveryStatus {
+  SCHEDULED
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  RESCHEDULED
+}
+
+enum DeliveryType {
+  PICKUP
+  DELIVERY
+}
+
+type Delivery {
+  id: ID!
+  orderId: ID!
+  scheduledDate: String!
+  timeSlot: TimeSlot!
+  address: String
+  status: DeliveryStatus!
+  notes: String
+  deliveryType: DeliveryType!
+  latitude: Float
+  longitude: Float
+}
+
+input ScheduleDeliveryInput {
+  orderId: ID!
+  scheduledDate: String!
+  timeSlot: TimeSlot = MORNING
+  address: String
+  notes: String
+  deliveryType: DeliveryType
+  latitude: Float
+  longitude: Float
+}
+
+extend type Query {
+  deliveries(from: String, to: String): [Delivery!]!
+  delivery(orderId: ID!): Delivery
+  deliveryCapacity(date: String!): Int!
+}
+
+extend type Mutation {
+  scheduleDelivery(input: ScheduleDeliveryInput!): Delivery!
+  updateDeliveryStatus(id: ID!, status: DeliveryStatus!): Delivery
+  rescheduleDelivery(id: ID!, newDate: String!): Delivery
+}
