@@ -1,0 +1,149 @@
+# Infraestructura local — BDs, mensajería, almacenamiento, IA, automatización.
+# Uso: cd Infraestructura && docker compose up -d
+# Los servicios de negocio se levantan por separado (cada repo tiene su Dockerfile
+# o comando dev). Este archivo recrea solo las dependencias compartidas.
+name: carpinteria-system
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: carpinteria-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: carpinteria
+      POSTGRES_PASSWORD: carpinteria
+      POSTGRES_DB: carpinteria
+    ports: ["15432:5432"]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck: { test: ["CMD-SHELL","pg_isready -U carpinteria"], interval: 5s, timeout: 3s, retries: 20 }
+    networks: [carpinteria-net]
+
+  mongo:
+    image: mongo:7
+    container_name: carpinteria-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: carpinteria
+      MONGO_INITDB_ROOT_PASSWORD: carpinteria
+      MONGO_INITDB_DATABASE: carpinteria
+    ports: ["27017:27017"]
+    volumes:
+      - mongo-data:/data/db
+      - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck: { test: ["CMD","mongosh","--quiet","--eval","db.runCommand('ping').ok"], interval: 5s, timeout: 3s, retries: 20 }
+    networks: [carpinteria-net]
+
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: carpinteria-dynamodb
+    restart: unless-stopped
+    command: ["-jar","DynamoDBLocal.jar","-sharedDb","-inMemory"]
+    ports: ["8000:8000"]
+    healthcheck: { test: ["CMD-SHELL","curl -sf http://localhost:8000 || exit 1"], interval: 5s, timeout: 3s, retries: 20 }
+    networks: [carpinteria-net]
+
+  redis:
+    image: redis:7-alpine
+    container_name: carpinteria-redis
+    restart: unless-stopped
+    ports: ["6379:6379"]
+    command: ["redis-server","--appendonly","yes"]
+    volumes: [redis-data:/data]
+    healthcheck: { test: ["CMD","redis-cli","ping"], interval: 5s, timeout: 3s, retries: 20 }
+    networks: [carpinteria-net]
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: carpinteria-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: carpinteria
+      RABBITMQ_DEFAULT_PASS: carpinteria
+    ports: ["5672:5672","15672:15672"]
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./docker/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./docker/rabbitmq-definitions.json:/opt/definitions.json:ro
+    healthcheck: { test: ["CMD","rabbitmq-diagnostics","-q","ping"], interval: 5s, timeout: 5s, retries: 20 }
+    networks: [carpinteria-net]
+
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: carpinteria-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: carpinteria
+      MINIO_ROOT_PASSWORD: carpinteria123
+    ports: ["9000:9000","19001:9001"]
+    volumes: [minio-data:/data]
+    healthcheck: { test: ["CMD","mc","ready","local"], interval: 5s, timeout: 3s, retries: 20 }
+    networks: [carpinteria-net]
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: carpinteria-ollama
+    restart: unless-stopped
+    ports: ["11434:11434"]
+    volumes: [ollama-data:/root/.ollama]
+    networks: [carpinteria-net]
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: carpinteria-n8n
+    restart: unless-stopped
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: admin
+      N8N_BASIC_AUTH_PASSWORD: carpinteria
+      WEBHOOK_URL: http://localhost:5678/
+    ports: ["5678:5678"]
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ../Automatizacion-N8N:/opt/workflows:ro
+    networks: [carpinteria-net]
+
+  # WhatsApp real — WAHA (WhatsApp HTTP API, engine NOWEB sin Chrome)
+  # Pairing una sola vez: GET http://localhost:8002/api/default/auth/qr
+  # Mensajes entrantes → n8n webhook whatsapp-incoming (agente).
+  waha:
+    image: devlikeapro/waha:noweb-2026.9.2
+    container_name: carpinteria-waha
+    restart: unless-stopped
+    environment:
+      WAHA_API_KEY: ${WAHA_API_KEY:-carpinteria-waha-dev}
+      WAHA_PRINT_QR: "false"
+      WAHA_DASHBOARD_ENABLED: "false"
+    ports: ["8002:3000"]
+    volumes: [waha-data:/app/.sessions]
+    healthcheck: { test: ["CMD-SHELL","wget -qO- http://localhost:3000/api/sessions > /dev/null || exit 1"], interval: 10s, timeout: 5s, retries: 12 }
+    networks: [carpinteria-net]
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: carpinteria-mailpit
+    restart: unless-stopped
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    ports: ["8025:8025","1025:1025"]
+    healthcheck: { test: ["CMD-SHELL","wget -qO- http://localhost:8025/api/v1/messages || exit 1"], interval: 5s, timeout: 3s, retries: 20 }
+    networks: [carpinteria-net]
+
+volumes:
+  postgres-data: {}
+  mongo-data: {}
+  redis-data: {}
+  rabbitmq-data: {}
+  minio-data: {}
+  ollama-data: {}
+  n8n-data: {}
+  openwa-data: {}
+  waha-data: {}
+
+networks:
+  carpinteria-net:
+    external: true        # reutiliza la red existente de los contenedores
+    name: carpinteria-net

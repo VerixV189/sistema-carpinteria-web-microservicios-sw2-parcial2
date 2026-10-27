@@ -1,0 +1,185 @@
+# Servicios de aplicación — 4 backends + 3 frontends + consumer.
+# Requiere la infra primero: docker compose -f docker-compose.yml up -d
+# Uso: cd Infraestructura && docker compose -f docker-compose.apps.yml up -d --build
+name: carpinteria-system
+
+services:
+  business-service:
+    build: ../Backend1-Java-Negocio
+    image: carpinteria-system-business-service
+    container_name: carpinteria-business
+    restart: unless-stopped
+    ports: ["8080:8080"]
+    environment:
+      SERVER_PORT: "8080"
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/carpinteria
+      SPRING_DATASOURCE_USERNAME: carpinteria
+      SPRING_DATASOURCE_PASSWORD: carpinteria
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_USERNAME: carpinteria
+      SPRING_RABBITMQ_PASSWORD: carpinteria
+      RABBITMQ_EXCHANGE: carpinteria.events
+      JWT_SECRET: dev-carpinteria-secret-change-in-production
+      INTERNAL_SECRET: carpinteria-internal-dev
+    networks: [carpinteria-net]
+
+  gateway-service:
+    build: ../Backend2-NestJS-Gateway
+    image: carpinteria-system-gateway-service
+    container_name: carpinteria-gateway
+    restart: unless-stopped
+    ports: ["3000:3000"]
+    environment:
+      PORT: "3000"
+      JWT_SECRET: dev-carpinteria-secret-change-in-production
+      JWT_EXPIRATION: "86400"
+      CORS_ORIGINS: http://localhost:4200,http://localhost:4202,http://localhost:4204
+      BUSINESS_SERVICE_URL: http://business-service:8080
+      AI_SERVICE_URL: http://ai-service:8100
+      BILLING_SERVICE_URL: http://billing-service:8001
+      MONGO_URI: mongodb://carpinteria:carpinteria@mongo:27017/carpinteria?authSource=admin
+      DYNAMODB_ENDPOINT: http://dynamodb-local:8000
+      RABBITMQ_URL: amqp://carpinteria:carpinteria@rabbitmq:5672
+      RABBITMQ_EXCHANGE: carpinteria.events
+      REDIS_URL: redis://redis:6379
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+      AWS_REGION: us-east-1
+      INTERNAL_SECRET: carpinteria-internal-dev
+      SEED_USERS: admin@carpinteria.com:admin123:ADMIN;cliente@carpinteria.com:cliente123:CLIENT;carpintero@carpinteria.com:carp123:CARPENTER
+      PAYMENT_GATEWAY: stripe
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+    networks: [carpinteria-net]
+
+  ai-service:
+    build: ../Backend3-Python-IA-MCP
+    image: carpinteria-system-ai-service
+    container_name: carpinteria-ai
+    restart: unless-stopped
+    ports: ["8100:8100", "8110:8110"]
+    environment:
+      PORT: "8100"
+      MCP_PORT: "8110"
+      MCP_API_KEY: carpinteria-mcp-dev
+      INTERNAL_SECRET: carpinteria-internal-dev
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2:3b}
+      BUSINESS_SERVICE_URL: http://business-service:8080
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: carpinteria
+      POSTGRES_PASSWORD: carpinteria
+      POSTGRES_DB: carpinteria
+      POSTGRES_RO_USER: carpinteria_ro
+      POSTGRES_RO_PASSWORD: carpinteria_ro_dev
+      MONGO_URI: mongodb://carpinteria:carpinteria@mongo:27017/carpinteria?authSource=admin
+      RABBITMQ_URL: amqp://carpinteria:carpinteria@rabbitmq:5672
+      RABBITMQ_EXCHANGE: carpinteria.events
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-llama-3.3-70b-versatile}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      ELEVENLABS_API_KEY: ${ELEVENLABS_API_KEY:-}
+    networks: [carpinteria-net]
+
+  billing-service:
+    build: ../Backend4-PHP-Recibos
+    image: carpinteria-system-billing-service
+    container_name: carpinteria-billing
+    restart: unless-stopped
+    ports: ["8001:8001"]
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: base64:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: carpinteria_billing
+      DB_USERNAME: carpinteria
+      DB_PASSWORD: carpinteria
+      FILESYSTEM_DISK: s3
+      AWS_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: carpinteria
+      AWS_SECRET_ACCESS_KEY: carpinteria123
+      AWS_BUCKET: invoices
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_USE_PATH_STYLE_ENDPOINT: "true"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: carpinteria
+      RABBITMQ_PASSWORD: carpinteria
+      RABBITMQ_VHOST: /
+      RABBITMQ_EXCHANGE: carpinteria.events
+      N8N_WEBHOOK_URL: http://n8n:5678/webhook/invoice-generated
+      WEBHOOK_SECRET: carpinteria-webhook-dev
+      INTERNAL_SECRET: carpinteria-internal-dev
+      BUSINESS_GRAPHQL_URL: http://business-service:8080/graphql
+    networks: [carpinteria-net]
+
+  billing-consumer:
+    build: ../Backend4-PHP-Recibos
+    image: carpinteria-system-billing-consumer
+    container_name: carpinteria-billing-consumer
+    restart: unless-stopped
+    command: ["php", "artisan", "billing:consume-payments"]
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: base64:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: carpinteria_billing
+      DB_USERNAME: carpinteria
+      DB_PASSWORD: carpinteria
+      FILESYSTEM_DISK: s3
+      AWS_ENDPOINT: http://minio:9000
+      AWS_ACCESS_KEY_ID: carpinteria
+      AWS_SECRET_ACCESS_KEY: carpinteria123
+      AWS_BUCKET: invoices
+      AWS_USE_PATH_STYLE_ENDPOINT: "true"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: carpinteria
+      RABBITMQ_PASSWORD: carpinteria
+      RABBITMQ_VHOST: /
+      RABBITMQ_EXCHANGE: carpinteria.events
+      N8N_WEBHOOK_URL: http://n8n:5678/webhook/invoice-generated
+      WEBHOOK_SECRET: carpinteria-webhook-dev
+      INTERNAL_SECRET: carpinteria-internal-dev
+    networks: [carpinteria-net]
+
+  web-portal:
+    build: ../Frontend1-React-Portal
+    image: carpinteria-system-web-portal
+    container_name: carpinteria-portal
+    restart: unless-stopped
+    ports: ["4200:80"]
+    networks: [carpinteria-net]
+
+  admin-app:
+    build: ../Frontend2-Angular-Admin
+    image: carpinteria-system-admin-app
+    container_name: carpinteria-admin
+    restart: unless-stopped
+    ports: ["4202:80"]
+    networks: [carpinteria-net]
+
+  workshop-app:
+    build: ../Frontend3-Svelte-Taller
+    image: carpinteria-system-workshop-app
+    container_name: carpinteria-workshop
+    restart: unless-stopped
+    ports: ["4204:80"]
+    networks: [carpinteria-net]
+
+networks:
+  carpinteria-net:
+    external: true
+    name: carpinteria-net

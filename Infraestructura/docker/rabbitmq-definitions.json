@@ -1,0 +1,1 @@
+{"users":[{"name":"carpinteria","password":"carpinteria","tags":"administrator"}],"vhosts":[{"name":"/"}],"permissions":[{"user":"carpinteria","vhost":"/","configure":".*","write":".*","read":".*"}]}
