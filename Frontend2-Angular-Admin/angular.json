@@ -1,0 +1,98 @@
+{
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"projects": {
+		"admin-app": {
+			"projectType": "application",
+			"root": "",
+			"sourceRoot": "src",
+			"architect": {
+				"build": {
+					"builder": "@angular-architects/native-federation:build",
+					"options": {},
+					"configurations": {
+						"production": {
+							"target": "admin-app:esbuild:production"
+						},
+						"development": {
+							"target": "admin-app:esbuild:development",
+							"dev": true
+						}
+					},
+					"defaultConfiguration": "production"
+				},
+				"serve": {
+					"builder": "@angular-architects/native-federation:build",
+					"options": {
+						"target": "admin-app:serve-original:development",
+						"rebuildDelay": 0,
+						"dev": true,
+						"port": 0
+					},
+					"configurations": {
+						"production": {
+							"target": "admin-app:serve-original:production"
+						},
+						"development": {
+							"target": "admin-app:serve-original:development"
+						}
+					},
+					"defaultConfiguration": "development"
+				},
+				"esbuild": {
+					"builder": "@angular-devkit/build-angular:application",
+					"options": {
+						"outputPath": "dist/admin-app",
+						"index": "src/index.html",
+						"browser": "src/main.ts",
+						"polyfills": [
+							"zone.js",
+							"es-module-shims"
+						],
+						"tsConfig": "tsconfig.app.json",
+						"assets": [
+							"src/assets"
+						],
+						"styles": [
+							"src/styles.css"
+						]
+					},
+					"configurations": {
+						"production": {
+							"budgets": [
+								{
+									"type": "initial",
+									"maximumWarning": "1mb",
+									"maximumError": "2mb"
+								}
+							]
+						},
+						"development": {
+							"optimization": false,
+							"extractLicenses": false,
+							"sourceMap": true
+						}
+					}
+				},
+				"serve-original": {
+					"builder": "@angular-devkit/build-angular:dev-server",
+					"options": {
+						"buildTarget": "admin-app:esbuild",
+						"port": 4202
+					},
+					"configurations": {
+						"production": {
+							"buildTarget": "admin-app:esbuild:production"
+						},
+						"development": {
+							"buildTarget": "admin-app:esbuild:development"
+						}
+					}
+				}
+			}
+		}
+  },
+  "cli": {
+    "analytics": "2d1598f6-aa4b-4da2-a11a-fb2361e9c967"
+  }
+}
