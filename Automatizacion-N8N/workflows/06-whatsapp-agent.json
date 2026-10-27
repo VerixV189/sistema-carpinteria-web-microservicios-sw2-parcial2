@@ -1,0 +1,184 @@
+{
+  "name": "Agente por WhatsApp — onMessage → /ai/agent → reply",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "whatsapp-incoming",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "b1b2c3d4-0006-4000-8000-000000000001",
+      "name": "Webhook whatsapp-incoming",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "whatsapp-incoming",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10b5yqAuvCc7NFjl",
+          "name": "Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filtra mensajes entrantes reales de WAHA\n// Payload: { event:'message', session, payload:{ from, body, fromMe, ... } }\nconst w = $json.body || $json;\nconst m = w.payload || w;\nconst ok = w.event === 'message' && m.body && typeof m.body === 'string' && !m.fromMe && m.from && m.from.endsWith('@c.us');\nreturn [{ json: { ok, chatId: m.from, text: (m.body || '').trim(), fromName: m._data?.notifyName || m.from } }];"
+      },
+      "id": "b1b2c3d4-0006-4000-8000-000000000002",
+      "name": "Filtrar mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "is-msg",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b1b2c3d4-0006-4000-8000-000000000003",
+      "name": "¿Mensaje válido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ai-service:8100/ai/agent",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { query: $json.text, session_id: 'wa_' + $json.chatId } }}",
+        "options": {
+          "timeout": 60000
+        },
+        "onError": "continueRegularOutput",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "b1b2c3d4-0006-4000-8000-000000000004",
+      "name": "Agente IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://waha:3000/api/sendText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "carpinteria-waha-dev"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { session: 'default', chatId: $('Filtrar mensaje').item.json.chatId, text: $('Agente IA').item.json.answer || 'No pude procesar tu mensaje. Intenta de nuevo.' } }}",
+        "options": {},
+        "onError": "continueRegularOutput"
+      },
+      "id": "b1b2c3d4-0006-4000-8000-000000000005",
+      "name": "Responder WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook whatsapp-incoming": {
+      "main": [
+        [
+          {
+            "node": "Filtrar mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar mensaje": {
+      "main": [
+        [
+          {
+            "node": "¿Mensaje válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Mensaje válido?": {
+      "main": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Agente IA": {
+      "main": [
+        [
+          {
+            "node": "Responder WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "BkiDLR0pMibdfZ57"
+}

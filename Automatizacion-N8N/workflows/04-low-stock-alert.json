@@ -1,0 +1,99 @@
+{
+  "name": "material.low_stock → alerta al taller",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "material-low-stock",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "authentication": "headerAuth"
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000001",
+      "name": "Webhook material.low_stock",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "material-low-stock",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10b5yqAuvCc7NFjl",
+          "name": "Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ai-service:8100/ai/report",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { query: 'materiales con stock bajo' } }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000002",
+      "name": "Resumen IA de inventario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "subject": "=Alerta: material {{ $json.body.materialName }} bajo stock",
+        "fromEmail": "inventario@carpinteria.com",
+        "toEmail": "taller@carpinteria.com",
+        "text": "=El material {{ $json.body.materialName }} quedó en {{ $json.body.stock }} m³ (mínimo {{ $json.body.minStock }} m³). Revisar resumen IA."
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000003",
+      "name": "Email al taller",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        380
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtpmailpit01",
+          "name": "Mailpit SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook material.low_stock": {
+      "main": [
+        [
+          {
+            "node": "Resumen IA de inventario",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email al taller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "HVQRl4kF8b7qPxY1"
+}

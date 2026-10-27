@@ -1,0 +1,103 @@
+{
+  "name": "CU6 — payment.completed → actualizar estado → disparar recibo",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "payment-completed",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "authentication": "headerAuth"
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000001",
+      "name": "Webhook payment.completed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "payment-completed",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10b5yqAuvCc7NFjl",
+          "name": "Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://business-service:8080/graphql",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { query: 'mutation { updateOrderStatus(id: \"' + $json.body.orderId + '\", status: APPROVED) { id status } }' } }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Actualizar pedido a APPROVED",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://billing-service:8001/api/invoices",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { client_name: $json.body.clientName || 'Cliente', client_email: $json.body.clientEmail, order_id: $json.body.orderId, payment_id: $json.body.paymentId, items: [{ description: 'Pedido #' + $json.body.orderId, quantity: 1, unit_price: $json.body.amount }] } }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000003",
+      "name": "Disparar factura",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        380
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook payment.completed": {
+      "main": [
+        [
+          {
+            "node": "Actualizar pedido a APPROVED",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Disparar factura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "UGAX4oIRtLyj8lvi"
+}

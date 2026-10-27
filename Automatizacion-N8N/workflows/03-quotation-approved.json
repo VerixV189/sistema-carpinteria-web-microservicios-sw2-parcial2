@@ -1,0 +1,99 @@
+{
+  "name": "quotation.approved → notificar cliente + crear pedido",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "quotation-approved",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "authentication": "headerAuth"
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000001",
+      "name": "Webhook quotation.approved",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "quotation-approved",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10b5yqAuvCc7NFjl",
+          "name": "Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://business-service:8080/graphql",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { query: 'mutation { createOrder(input: { clientId: \"' + ($json.body.clientId || '1') + '\", description: \"' + ($json.body.description || 'Pedido desde cotización') + '\", quotationId: \"' + ($json.body.quotationId || '') + '\" }) { id status totalPrice } }' } }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000002",
+      "name": "Crear pedido",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "subject": "=Tu cotización #{{ $json.body.quotationId }} fue aprobada",
+        "fromEmail": "ventas@carpinteria.com",
+        "toEmail": "={{ $json.body.clientEmail || 'cliente@demo.com' }}",
+        "text": "=Tu cotización por Bs. {{ $json.body.totalPrice }} fue aprobada y el pedido ya entró a producción."
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Email aprobación",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        460,
+        380
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtpmailpit01",
+          "name": "Mailpit SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook quotation.approved": {
+      "main": [
+        [
+          {
+            "node": "Crear pedido",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email aprobación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "FGPVyhvFYVb6fjV8"
+}

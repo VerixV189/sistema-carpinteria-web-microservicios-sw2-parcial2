@@ -1,0 +1,102 @@
+{
+  "name": "reporte.diario → resumen al admin (08:00)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000001",
+      "name": "Cron 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ai-service:8100/ai/report",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { query: 'resumen de pedidos y facturación del día de hoy' } }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000002",
+      "name": "Generar reporte IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "subject": "Reporte diario de operaciones — Carpintería",
+        "fromEmail": "reportes@carpinteria.com",
+        "toEmail": "admin@carpinteria.com",
+        "text": "=Resumen automático (IA):\n\n{{ $json.narrative }}\n\nSQL ejecutado: {{ $json.sql }}\nFilas: {{ JSON.stringify($json.rows) }}"
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000003",
+      "name": "Email al admin",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        700,
+        300
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtpmailpit01",
+          "name": "Mailpit SMTP"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron 08:00": {
+      "main": [
+        [
+          {
+            "node": "Generar reporte IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar reporte IA": {
+      "main": [
+        [
+          {
+            "node": "Email al admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "g0xs11tmL9n9c8Pj"
+}

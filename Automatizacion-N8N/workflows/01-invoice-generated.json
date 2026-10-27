@@ -1,0 +1,309 @@
+{
+  "name": "CU5 — invoice.generated → PDF → email → WhatsApp (OpenWA)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "invoice-generated",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Webhook invoice.generated",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "invoice-generated",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "10b5yqAuvCc7NFjl",
+          "name": "Webhook Secret"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ 'http://billing-service:8001/api/invoices/' + $json.body.invoiceId + '/download' }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000002",
+      "name": "Descargar PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "subject": "=Tu recibo N° {{ $('Webhook invoice.generated').item.json.body.series }}-{{ $('Webhook invoice.generated').item.json.body.number }}",
+        "fromEmail": "facturacion@carpinteria.com",
+        "options": {
+          "attachments": "data"
+        },
+        "toEmail": "={{ $('Webhook invoice.generated').item.json.body.clientEmail || 'cliente@demo.com' }}",
+        "text": "=Adjuntamos tu recibo por Bs. {{ $('Webhook invoice.generated').item.json.body.total }}. ¡Gracias por tu compra!"
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000003",
+      "name": "Enviar Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        680,
+        180
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "smtpmailpit01",
+          "name": "Mailpit SMTP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://business-service:8080/graphql",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { query: '{ clients { email phone name } }' } }}",
+        "options": {},
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-internal-secret",
+              "value": "carpinteria-internal-dev"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000005",
+      "name": "Buscar teléfono cliente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resuelve el chatId de WhatsApp: dígitos, prefijo 591 si falta\nconst inv = $('Webhook invoice.generated').item.json.body;\nconst clients = $json.data?.clients || [];\nconst c = clients.find(x => x.email === inv.clientEmail) || {};\nlet phone = (c.phone || '').replace(/\\D/g, '');\nif (phone && !phone.startsWith('591')) phone = '591' + phone;\nreturn [{ json: { chatId: phone ? phone + '@c.us' : null, clientName: inv.clientName || c.name, series: inv.series, number: inv.number, total: inv.total } }];"
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000006",
+      "name": "Resolver chatId",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "has-phone",
+              "leftValue": "={{ $json.chatId }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000007",
+      "name": "¿Tiene teléfono?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://waha:3000/api/sendText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "carpinteria-waha-dev"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { session: 'default', chatId: $json.chatId, text: `Hola ${$json.clientName || 'cliente'}, tu recibo ${$json.series}-${$json.number} por Bs. ${$json.total} fue emitido. Te llega el PDF en el siguiente mensaje.` } }}",
+        "options": {},
+        "onError": "continueRegularOutput"
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000008",
+      "name": "WhatsApp texto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://waha:3000/api/sendFile",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "carpinteria-waha-dev"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { session: 'default', chatId: $('Resolver chatId').item.json.chatId, file: { mimetype: 'application/pdf', filename: `recibo-${$('Resolver chatId').item.json.series}-${$('Resolver chatId').item.json.number}.pdf`, data: 'data:application/pdf;base64,' + $('Descargar PDF').item.binary.data.data } }}",
+        "options": {},
+        "onError": "continueRegularOutput"
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000009",
+      "name": "WhatsApp PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fallback (atajo documentado): sin teléfono u OpenWA caído → log\nconst d = $json;\nconsole.log('WhatsApp simulado → ' + (d.clientName || 'cliente') + ': Recibo ' + d.series + '-' + d.number + ' por Bs. ' + d.total);\nreturn [{ json: { whatsappSent: false, simulated: true, ...d } }];"
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000010",
+      "name": "WhatsApp (log fallback)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook invoice.generated": {
+      "main": [
+        [
+          {
+            "node": "Descargar PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar PDF": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Buscar teléfono cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar teléfono cliente": {
+      "main": [
+        [
+          {
+            "node": "Resolver chatId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver chatId": {
+      "main": [
+        [
+          {
+            "node": "¿Tiene teléfono?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Tiene teléfono?": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "WhatsApp (log fallback)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp texto": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "j6YcOVBxSid4MFI2"
+}
