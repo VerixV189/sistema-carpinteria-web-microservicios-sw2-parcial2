@@ -40,20 +40,24 @@ export class DynamoDBPaymentLogRepository implements PaymentLogRepository, OnMod
       await this.dynamo.raw.send(new DescribeTableCommand({ TableName: TABLE }));
     } catch {
       this.log.log(`Creando tabla DynamoDB ${TABLE}`);
-      await this.dynamo.raw.send(
-        new CreateTableCommand({
-          TableName: TABLE,
-          AttributeDefinitions: [
-            { AttributeName: 'payment_id', AttributeType: ScalarAttributeType.S },
-            { AttributeName: 'timestamp', AttributeType: ScalarAttributeType.N },
-          ],
-          KeySchema: [
-            { AttributeName: 'payment_id', KeyType: KeyType.HASH },
-            { AttributeName: 'timestamp', KeyType: KeyType.RANGE },
-          ],
-          BillingMode: 'PAY_PER_REQUEST',
-        }),
-      );
+      try {
+        await this.dynamo.raw.send(
+          new CreateTableCommand({
+            TableName: TABLE,
+            AttributeDefinitions: [
+              { AttributeName: 'payment_id', AttributeType: ScalarAttributeType.S },
+              { AttributeName: 'timestamp', AttributeType: ScalarAttributeType.N },
+            ],
+            KeySchema: [
+              { AttributeName: 'payment_id', KeyType: KeyType.HASH },
+              { AttributeName: 'timestamp', KeyType: KeyType.RANGE },
+            ],
+            BillingMode: 'PAY_PER_REQUEST',
+          }),
+        );
+      } catch (err) {
+        this.log.warn(`DynamoDB no disponible (${(err as Error).message}) — continuando con MongoDB/consola`);
+      }
     }
   }
 
