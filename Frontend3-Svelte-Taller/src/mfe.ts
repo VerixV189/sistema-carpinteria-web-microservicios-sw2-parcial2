@@ -13,7 +13,8 @@ export async function bootstrap(): Promise<void> {
   if (!linkEl) {
     linkEl = document.createElement('link');
     linkEl.rel = 'stylesheet';
-    linkEl.href = 'http://localhost:4204/mfe-assets/style.css';
+    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+    linkEl.href = `http://${host}:4204/mfe-assets/style.css`;
     document.head.appendChild(linkEl);
   }
 }

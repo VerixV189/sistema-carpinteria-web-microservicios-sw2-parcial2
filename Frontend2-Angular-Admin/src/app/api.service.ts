@@ -31,7 +31,7 @@ export interface Quotation {
 /** Acceso REST al gateway (cotizaciones/pagos no pasan por GraphQL). */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly base = 'http://localhost:3000';
+  private readonly base = `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:3000`;
 
   constructor(private auth: AuthService) {}
 

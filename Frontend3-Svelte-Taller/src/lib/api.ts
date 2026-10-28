@@ -1,6 +1,7 @@
-const GATEWAY = 'http://localhost:3000/api';
-const AI = 'http://localhost:3000/api/ai';
-const GRAPHQL = 'http://localhost:3000/graphql';
+const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const GATEWAY = `http://${HOST}:3000/api`;
+const AI = `http://${HOST}:3000/api/ai`;
+const GRAPHQL = `http://${HOST}:3000/graphql`;
 
 function headers() {
   const token = localStorage.getItem('carpinteria_token')

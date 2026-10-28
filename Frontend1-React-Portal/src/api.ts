@@ -1,7 +1,8 @@
 // Cliente REST → gateway (quotation-payment-service + billing-service)
 import { getSession } from './auth';
 
-const BASE = import.meta.env.VITE_GATEWAY_URL ?? 'http://localhost:3000';
+const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const BASE = import.meta.env.VITE_GATEWAY_URL || `http://${HOST}:3000`;
 const GATEWAY = `${BASE}/api`;
 const AUTH = BASE;
 const AI = `${BASE}/api/ai`;

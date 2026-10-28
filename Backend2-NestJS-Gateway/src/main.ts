@@ -13,10 +13,14 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const jwtVerify = app.get(JwtVerifyService);
 
-  const corsOrigins = (config.get<string>('CORS_ORIGINS') ?? 'http://localhost:4200')
-    .split(',')
-    .map((o) => o.trim());
-  app.enableCors({ origin: corsOrigins, credentials: true });
+  const rawOrigins = config.get<string>('CORS_ORIGINS');
+  const corsOrigin =
+    !rawOrigins || rawOrigins.trim() === '*'
+      ? true
+      : (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
+          cb(null, true);
+        };
+  app.enableCors({ origin: corsOrigin, credentials: true });
 
   const express = app.getHttpAdapter().getInstance();
   // Body parser para rutas propias: auth + dominio local (quotations/payments)
@@ -36,7 +40,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const port = config.get<number>('PORT') ?? 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   new Logger('Gateway').log(`API Gateway + Cotizaciones/Pagos escuchando en :${port}`);
 }
 

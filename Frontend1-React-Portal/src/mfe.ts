@@ -7,8 +7,9 @@
 import { start } from 'single-spa';
 
 // Angular se sirve bajo /admin/ (base-href): el manifest y chunks viven ahí.
-const ADMIN_BASE = 'http://localhost:4202';
-const WORKSHOP_URL = 'http://localhost:4204';
+const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const ADMIN_BASE = `http://${HOST}:4202`;
+const WORKSHOP_URL = `http://${HOST}:4204`;
 
 start();
 

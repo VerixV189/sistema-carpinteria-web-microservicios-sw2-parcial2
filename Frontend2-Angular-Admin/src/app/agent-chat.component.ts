@@ -111,7 +111,8 @@ export class AgentChatComponent {
     this.msgs.push({ role: 'user', text });
     this.loading = true;
     try {
-      const r = await fetch('http://localhost:3000/api/ai/agent', {
+      const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+      const r = await fetch(`http://${host}:3000/api/ai/agent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

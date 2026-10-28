@@ -7,7 +7,8 @@ export interface Session {
 }
 
 const KEY = 'carpinteria_session';
-const LOGIN_URL = 'http://localhost:3000/auth/login';
+const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+const LOGIN_URL = `http://${HOST}:3000/auth/login`;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

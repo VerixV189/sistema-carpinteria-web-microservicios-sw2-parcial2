@@ -60,7 +60,9 @@ function fechaBonita(iso: string): string {
 
 async function downloadInvoice(id: number | string, name: string) {
   const token = getSession()?.token;
-  const r = await fetch(`http://localhost:3000/api/invoices/${id}/download`, {
+  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  const base = import.meta.env.VITE_GATEWAY_URL || `http://${host}:3000`;
+  const r = await fetch(`${base}/api/invoices/${id}/download`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
   if (!r.ok) { alert('No se pudo descargar el recibo'); return; }
