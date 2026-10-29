@@ -8,7 +8,10 @@ export interface Session {
 
 const KEY = 'carpinteria_session';
 const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-const LOGIN_URL = `http://${HOST}:3000/auth/login`;
+const IS_HTTPS = typeof window !== 'undefined' && window.location.protocol === 'https:';
+const ROOT_DOMAIN = HOST.replace(/^(www|admin|taller|api)\./, '');
+const GATEWAY_BASE = IS_HTTPS ? `https://api.${ROOT_DOMAIN}` : `http://${HOST}:3000`;
+const LOGIN_URL = `${GATEWAY_BASE}/auth/login`;
 
 function decodeRole(token: string): Session['role'] {
   try {

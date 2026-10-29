@@ -1,7 +1,10 @@
 const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-const GATEWAY = `http://${HOST}:3000/api`;
-const AI = `http://${HOST}:3000/api/ai`;
-const GRAPHQL = `http://${HOST}:3000/graphql`;
+const IS_HTTPS = typeof window !== 'undefined' && window.location.protocol === 'https:';
+const ROOT_DOMAIN = HOST.replace(/^(www|admin|taller|api)\./, '');
+const BASE = IS_HTTPS ? `https://api.${ROOT_DOMAIN}` : `http://${HOST}:3000`;
+const GATEWAY = `${BASE}/api`;
+const AI = `${BASE}/api/ai`;
+const GRAPHQL = `${BASE}/graphql`;
 
 function headers() {
   const token = localStorage.getItem('carpinteria_token')

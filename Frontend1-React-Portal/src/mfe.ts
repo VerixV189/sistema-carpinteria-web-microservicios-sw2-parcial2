@@ -8,8 +8,10 @@ import { start } from 'single-spa';
 
 // Angular se sirve bajo /admin/ (base-href): el manifest y chunks viven ahí.
 const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-const ADMIN_BASE = `http://${HOST}:4202`;
-const WORKSHOP_URL = `http://${HOST}:4204`;
+const IS_HTTPS = typeof window !== 'undefined' && window.location.protocol === 'https:';
+const ROOT_DOMAIN = HOST.replace(/^(www|admin|taller|api)\./, '');
+const ADMIN_BASE = IS_HTTPS ? `https://admin.${ROOT_DOMAIN}` : `http://${HOST}:4202`;
+const WORKSHOP_URL = IS_HTTPS ? `https://taller.${ROOT_DOMAIN}` : `http://${HOST}:4204`;
 
 start();
 

@@ -81,7 +81,7 @@
   onMount(async () => {
     acceptHandoff();
     if (!requireWorkshop()) {
-      if (location.port === '4204') { window.location.href = '/login'; return; }
+      if (location.port === '4204' || location.hostname.startsWith('taller.')) { window.location.href = '/login'; return; }
       denied = true;
       cargando = false;
       return;

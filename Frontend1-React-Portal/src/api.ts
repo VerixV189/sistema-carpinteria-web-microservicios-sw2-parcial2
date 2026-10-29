@@ -2,7 +2,10 @@
 import { getSession } from './auth';
 
 const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-const BASE = import.meta.env.VITE_GATEWAY_URL || `http://${HOST}:3000`;
+const IS_HTTPS = typeof window !== 'undefined' && window.location.protocol === 'https:';
+const ROOT_DOMAIN = HOST.replace(/^(www|admin|taller|api)\./, '');
+const DEFAULT_BASE = IS_HTTPS ? `https://api.${ROOT_DOMAIN}` : `http://${HOST}:3000`;
+const BASE = import.meta.env.VITE_GATEWAY_URL || DEFAULT_BASE;
 const GATEWAY = `${BASE}/api`;
 const AUTH = BASE;
 const AI = `${BASE}/api/ai`;

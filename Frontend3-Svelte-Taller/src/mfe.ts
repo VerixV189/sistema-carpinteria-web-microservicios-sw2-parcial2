@@ -14,7 +14,10 @@ export async function bootstrap(): Promise<void> {
     linkEl = document.createElement('link');
     linkEl.rel = 'stylesheet';
     const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    linkEl.href = `http://${host}:4204/mfe-assets/style.css`;
+    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+    const rootDomain = host.replace(/^(www|admin|taller|api)\./, '');
+    const workshopBase = isHttps ? `https://taller.${rootDomain}` : `http://${host}:4204`;
+    linkEl.href = `${workshopBase}/mfe-assets/style.css`;
     document.head.appendChild(linkEl);
   }
 }

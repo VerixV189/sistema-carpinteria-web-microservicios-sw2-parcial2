@@ -61,7 +61,10 @@ function fechaBonita(iso: string): string {
 async function downloadInvoice(id: number | string, name: string) {
   const token = getSession()?.token;
   const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-  const base = import.meta.env.VITE_GATEWAY_URL || `http://${host}:3000`;
+  const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const rootDomain = host.replace(/^(www|admin|taller|api)\./, '');
+  const defaultBase = isHttps ? `https://api.${rootDomain}` : `http://${host}:3000`;
+  const base = import.meta.env.VITE_GATEWAY_URL || defaultBase;
   const r = await fetch(`${base}/api/invoices/${id}/download`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });

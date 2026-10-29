@@ -237,7 +237,7 @@ class gt {
 }
 const _t = "4";
 typeof window < "u" && (window.__svelte || (window.__svelte = { v: /* @__PURE__ */ new Set() })).v.add(_t);
-const _host = typeof window < "u" ? window.location.hostname : "localhost", Ye = `http://${_host}:3000/api/ai`, vt = `http://${_host}:3000/graphql`;
+const _host = typeof window < "u" ? window.location.hostname : "localhost", _isHttps = typeof window < "u" && window.location.protocol === "https:", _root = _host.replace(/^(www|admin|taller|api)\./, ""), _base = _isHttps ? `https://api.${_root}` : `http://${_host}:3000`, Ye = `${_base}/api/ai`, vt = `${_base}/graphql`;
 function Se() {
   const e = localStorage.getItem("carpinteria_token");
   return { "Content-Type": "application/json", ...e ? { Authorization: `Bearer ${e}` } : {} };
@@ -732,7 +732,7 @@ function Nt(e, t, n) {
   ], p = !1, _ = !1;
   ot(async () => {
     if (St(), !Et()) {
-      if (location.port === "4204") {
+      if (location.port === "4204" || location.hostname.startsWith("taller.")) {
         window.location.href = "/login";
         return;
       }
@@ -812,7 +812,7 @@ class At extends gt {
 }
 let le = null, ne = null;
 async function Lt() {
-  ne || (ne = document.createElement("link"), ne.rel = "stylesheet", ne.href = `http://${typeof window < "u" ? window.location.hostname : "localhost"}:4204/mfe-assets/style.css`, document.head.appendChild(ne));
+  ne || (ne = document.createElement("link"), ne.rel = "stylesheet", ne.href = `${_isHttps ? `https://taller.${_root}` : `http://${_host}:4204`}/mfe-assets/style.css`, document.head.appendChild(ne));
 }
 async function Pt(e) {
   const t = (e == null ? void 0 : e.domElement) ?? document.getElementById("workshop-slot");

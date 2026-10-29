@@ -112,7 +112,10 @@ export class AgentChatComponent {
     this.loading = true;
     try {
       const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-      const r = await fetch(`http://${host}:3000/api/ai/agent`, {
+      const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+      const rootDomain = host.replace(/^(www|admin|taller|api)\./, '');
+      const gatewayBase = isHttps ? `https://api.${rootDomain}` : `http://${host}:3000`;
+      const r = await fetch(`${gatewayBase}/api/ai/agent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
