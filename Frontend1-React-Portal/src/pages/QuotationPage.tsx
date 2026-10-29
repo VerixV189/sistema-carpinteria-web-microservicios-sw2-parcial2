@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import { getSession } from '../auth';
 import { WOODS, formatBs } from '../catalog';
@@ -26,9 +27,17 @@ const NIVEL: Record<string, { texto: string; color: string; fondo: string }> = {
 };
 
 export default function QuotationPage() {
+  const [searchParams] = useSearchParams();
   const [paso, setPaso] = useState(1);
-  const [description, setDescription] = useState('');
-  const [woodType, setWoodType] = useState('');
+  const [description, setDescription] = useState(() => searchParams.get('desc') ?? '');
+  const [woodType, setWoodType] = useState(() => searchParams.get('wood') ?? '');
+
+  useEffect(() => {
+    const d = searchParams.get('desc');
+    const w = searchParams.get('wood');
+    if (d) setDescription(d);
+    if (w) setWoodType(w);
+  }, [searchParams]);
   const [photo, setPhoto] = useState<File | null>(null);
   const [estimate, setEstimate] = useState<any>(null);
   const [quotation, setQuotation] = useState<any>(null);

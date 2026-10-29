@@ -27,8 +27,17 @@ async function bootstrap() {
   // /graphql incluido: la matriz de roles inspecciona query vs mutation;
   // fixRequestBody (proxyReq) lo re-serializa al proxear.
   express.use(
-    ['/auth', '/health', '/api/auth', '/api/quotations', '/api/payments', '/graphql'],
-    json({ limit: '1mb' }),
+    [
+      '/auth',
+      '/health',
+      '/api/auth',
+      '/api/quotations',
+      '/api/payments',
+      '/api/products',
+      '/api/uploads',
+      '/graphql',
+    ],
+    json({ limit: '15mb' }),
   );
 
   // Proxys: /graphql + /subscriptions → business (Java), /api/ai → ai (Python),

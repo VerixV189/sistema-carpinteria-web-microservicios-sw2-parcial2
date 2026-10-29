@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearSession, getSession } from '../auth';
+import { cartCount, subscribeCart } from '../cart';
 import { Icon, Icons } from '../icons';
 
 interface NavLink {
@@ -10,13 +12,13 @@ interface NavLink {
 }
 
 const LINKS: NavLink[] = [
-  // Públicas — el portal también es la vitrina del negocio
+  // Públicas — el portal también es la vitrina y Marketplace del negocio
   { to: '/', label: 'Inicio', icon: 'home' },
-  { to: '/productos', label: 'Productos', icon: 'package' },
+  { to: '/productos', label: 'Marketplace', icon: 'package' },
   { to: '/nosotros', label: 'Nosotros', icon: 'info' },
   { to: '/contacto', label: 'Contacto', icon: 'mail' },
   // Zona cliente (autenticada)
-  { to: '/cotizar', label: 'Cotizar', icon: 'quote', roles: ['CLIENT', 'ADMIN'] },
+  { to: '/cotizar', label: 'Cotizar a Medida', icon: 'quote', roles: ['CLIENT', 'ADMIN'] },
   { to: '/mis-cotizaciones', label: 'Mis Cotizaciones', icon: 'chat', roles: ['CLIENT', 'ADMIN'] },
   { to: '/recibos', label: 'Mis Recibos', icon: 'receipt', roles: ['CLIENT', 'ADMIN'] },
   // Microfrontends por rol
@@ -30,6 +32,12 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const session = getSession();
+  const [itemsInCart, setItemsInCart] = useState(cartCount());
+
+  useEffect(() => {
+    setItemsInCart(cartCount());
+    return subscribeCart(() => setItemsInCart(cartCount()));
+  }, []);
 
   const logout = () => {
     clearSession();
@@ -61,6 +69,12 @@ export default function Navbar() {
         ))}
       </div>
       <div style={styles.userArea}>
+        {itemsInCart > 0 && (
+          <Link to="/productos?cart=1" style={styles.cartBtn} title="Ver carrito de compras">
+            <Icon name="package" size={14} />
+            <span>Carrito ({itemsInCart})</span>
+          </Link>
+        )}
         {session ? (
           <>
             <span style={styles.badge}>
@@ -100,9 +114,16 @@ const styles: Record<string, React.CSSProperties> = {
   link: {
     display: 'inline-flex', alignItems: 'center', gap: 6,
     color: '#D4A574', textDecoration: 'none', padding: '8px 14px', borderRadius: 6, fontSize: 14,
+    whiteSpace: 'nowrap',
   },
   active: { background: 'rgba(212,165,116,.15)', color: '#fff' },
   userArea: { display: 'flex', alignItems: 'center', gap: 10 },
+  cartBtn: {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    background: '#D4A574', color: '#3B2F2F', padding: '6px 12px',
+    borderRadius: 20, textDecoration: 'none', fontSize: 13, fontWeight: 700,
+    whiteSpace: 'nowrap',
+  },
   badge: {
     display: 'inline-flex', alignItems: 'center', gap: 5,
     background: 'rgba(212,165,116,.12)', color: '#D4A574',

@@ -1,4 +1,4 @@
-// Cliente REST → gateway (quotation-payment-service + billing-service)
+// Cliente REST → gateway (quotation-payment-service + marketplace + billing-service)
 import { getSession } from './auth';
 
 const HOST = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
@@ -10,6 +10,40 @@ const GATEWAY = `${BASE}/api`;
 const AUTH = BASE;
 const AI = `${BASE}/api/ai`;
 
+export interface MarketplaceProduct {
+  id: string;
+  name: string;
+  category: string;
+  woodType: string;
+  dimensions: string;
+  price: number;
+  estimatedDays: number;
+  stock: number;
+  description: string;
+  iconName: string;
+  imageUrl?: string;
+  carpenterEmail?: string;
+  carpenterName?: string;
+  createdByRole?: 'ADMIN' | 'CARPENTER';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpsertProductInput {
+  name: string;
+  category: string;
+  woodType: string;
+  dimensions: string;
+  price: number;
+  estimatedDays?: number;
+  stock: number;
+  description: string;
+  iconName?: string;
+  imageUrl?: string;
+  carpenterEmail?: string;
+  carpenterName?: string;
+}
+
 function headers() {
   const token = getSession()?.token;
   return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
@@ -17,7 +51,28 @@ function headers() {
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const r = await fetch(url, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
-  if (!r.ok) throw new Error(await r.text());
+  if (!r.ok) {
+    const errBody = await r.json().catch(() => null);
+    throw new Error(errBody?.message ?? (await r.text()) ?? `Error ${r.status}`);
+  }
+  return r.json();
+}
+
+async function put<T>(url: string, body: unknown): Promise<T> {
+  const r = await fetch(url, { method: 'PUT', headers: headers(), body: JSON.stringify(body) });
+  if (!r.ok) {
+    const errBody = await r.json().catch(() => null);
+    throw new Error(errBody?.message ?? `Error ${r.status}`);
+  }
+  return r.json();
+}
+
+async function del<T>(url: string): Promise<T> {
+  const r = await fetch(url, { method: 'DELETE', headers: headers() });
+  if (!r.ok) {
+    const errBody = await r.json().catch(() => null);
+    throw new Error(errBody?.message ?? `Error ${r.status}`);
+  }
   return r.json();
 }
 
@@ -36,23 +91,19 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-/** Sube una imagen a Cloudinary con firma generada por el gateway (el secret nunca llega al navegador). */
-async function cloudinaryUpload(file: File): Promise<string | null> {
+/** Sube una imagen al bucket AWS S3 a través del Gateway (/api/uploads/s3). */
+async function s3Upload(file: File, folder = 'quotations'): Promise<string | null> {
   try {
-    const sig = await get<{ cloudName: string; apiKey: string; timestamp: number; signature: string; folder: string }>(
-      `${GATEWAY}/uploads/cloudinary-signature`,
-    );
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('api_key', sig.apiKey);
-    fd.append('timestamp', String(sig.timestamp));
-    fd.append('signature', sig.signature);
-    fd.append('folder', sig.folder);
-    const r = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`, { method: 'POST', body: fd });
-    if (!r.ok) return null;
-    return (await r.json()).secure_url as string;
+    const base64 = await fileToBase64(file);
+    const res = await post<{ url: string; s3Url?: string | null }>(`${GATEWAY}/uploads/s3`, {
+      fileName: file.name,
+      mimeType: file.type || 'image/jpeg',
+      base64,
+      folder,
+    });
+    return res.url;
   } catch {
-    return null; // sin Cloudinary configurado → la cotización sigue sin foto
+    return null;
   }
 }
 
@@ -61,6 +112,37 @@ export const api = {
     post<{ accessToken: string }>(`${AUTH}/auth/login`, { email, password }),
   register: (input: { name: string; email: string; password: string; phone?: string; address?: string }) =>
     post<{ accessToken: string }>(`${AUTH}/auth/register`, input),
+
+  // — Marketplace (Flujo 2: Muebles disponibles + Compra directa) —
+  products: (params?: { category?: string; search?: string; availableOnly?: boolean }) => {
+    const qs = new URLSearchParams();
+    if (params?.category && params.category !== 'Todos') qs.set('category', params.category);
+    if (params?.search) qs.set('search', params.search);
+    if (params?.availableOnly) qs.set('availableOnly', 'true');
+    const query = qs.toString();
+    return get<MarketplaceProduct[]>(`${GATEWAY}/products${query ? `?${query}` : ''}`);
+  },
+  createProduct: (input: UpsertProductInput) =>
+    post<MarketplaceProduct>(`${GATEWAY}/products`, input),
+  updateProduct: (id: string, input: UpsertProductInput) =>
+    put<MarketplaceProduct>(`${GATEWAY}/products/${id}`, input),
+  deleteProduct: (id: string) =>
+    del<{ deleted: boolean; id: string }>(`${GATEWAY}/products/${id}`),
+  checkoutMarketplace: (input: {
+    items: Array<{ productId: string; quantity: number }>;
+    deliveryType: 'PICKUP' | 'DELIVERY';
+    deliveryAddress?: string;
+    deliveryLat?: number;
+    deliveryLng?: number;
+    notes?: string;
+    cardNumber: string;
+    cardHolder: string;
+    expiryMonth: number;
+    expiryYear: number;
+    cvv: string;
+  }) => post<any>(`${GATEWAY}/products/checkout`, input),
+
+  // — Cotizaciones a medida (Flujo 1) —
   createQuotation: (input: {
     clientId: string;
     photoUrl?: string;
@@ -87,7 +169,7 @@ export const api = {
     post<any>(`${AI}/estimate`, { description, woodType, imageBase64 }),
   agent: (query: string, sessionId: string) =>
     post<any>(`${AI}/agent`, { query, session_id: sessionId }),
-  uploadPhoto: cloudinaryUpload,
+  uploadPhoto: s3Upload,
   photoBase64: fileToBase64,
   invoices: (clientEmail: string) =>
     get<any>(`${GATEWAY}/invoices?client_email=${encodeURIComponent(clientEmail)}`),

@@ -6,6 +6,36 @@ const GATEWAY = `${BASE}/api`;
 const AI = `${BASE}/api/ai`;
 const GRAPHQL = `${BASE}/graphql`;
 
+export interface MarketplaceProduct {
+  id: string;
+  name: string;
+  category: string;
+  woodType: string;
+  dimensions: string;
+  price: number;
+  estimatedDays: number;
+  stock: number;
+  description: string;
+  iconName: string;
+  imageUrl?: string;
+  carpenterEmail?: string;
+  carpenterName?: string;
+}
+
+export interface UpsertProductPayload {
+  name: string;
+  category: string;
+  woodType: string;
+  dimensions: string;
+  price: number;
+  estimatedDays?: number;
+  stock: number;
+  description: string;
+  imageUrl?: string;
+  carpenterEmail?: string;
+  carpenterName?: string;
+}
+
 function headers() {
   const token = localStorage.getItem('carpinteria_token')
     ?? (() => { try { return JSON.parse(localStorage.getItem('carpinteria_session') ?? '{}').token; } catch { return null; } })();
@@ -79,4 +109,62 @@ export async function askAgent(query: string) {
     body: JSON.stringify({ query, session_id: sessionId }),
   });
   return r.json();
+}
+
+// ─── Marketplace CRUD & AWS S3 para el Taller ─────────────────────────────────
+
+export async function listProducts(): Promise<MarketplaceProduct[]> {
+  const r = await fetch(`${GATEWAY}/products`, { headers: headers() });
+  if (!r.ok) return [];
+  return r.json();
+}
+
+export async function createProduct(payload: UpsertProductPayload): Promise<MarketplaceProduct> {
+  const r = await fetch(`${GATEWAY}/products`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error('No se pudo publicar el mueble');
+  return r.json();
+}
+
+export async function updateProduct(id: string, payload: UpsertProductPayload): Promise<MarketplaceProduct> {
+  const r = await fetch(`${GATEWAY}/products/${id}`, {
+    method: 'PUT',
+    headers: headers(),
+    body: JSON.stringify(payload),
+  });
+  if (!r.ok) throw new Error('No se pudo actualizar el mueble');
+  return r.json();
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  const r = await fetch(`${GATEWAY}/products/${id}`, {
+    method: 'DELETE',
+    headers: headers(),
+  });
+  if (!r.ok) throw new Error('No se pudo eliminar el mueble');
+}
+
+export async function uploadImageToS3(file: File, folder = 'marketplace'): Promise<string> {
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve((fr.result as string).split(',')[1]);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+  const r = await fetch(`${GATEWAY}/uploads/s3`, {
+    method: 'POST',
+    headers: headers(),
+    body: JSON.stringify({
+      fileName: file.name,
+      mimeType: file.type || 'image/jpeg',
+      base64,
+      folder,
+    }),
+  });
+  if (!r.ok) throw new Error('Error al subir imagen a S3');
+  const data = await r.json();
+  return data.url;
 }

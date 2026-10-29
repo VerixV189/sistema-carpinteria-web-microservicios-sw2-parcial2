@@ -1,6 +1,75 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import { findMyCarpenter, myOrders, updateStep, askAgent } from './api';
+  import {
+    findMyCarpenter, myOrders, updateStep, askAgent,
+    listProducts, createProduct, updateProduct, deleteProduct, uploadImageToS3,
+    type MarketplaceProduct, type UpsertProductPayload,
+  } from './api';
+
+  // ─── Marketplace (muebles en venta) ─────────────────────────────────────────
+  let tab: 'trabajos' | 'marketplace' = 'trabajos';
+  let productos: MarketplaceProduct[] = [];
+  let prodModal = false;
+  let prodEditando: MarketplaceProduct | null = null;
+  let prodFoto: File | null = null;
+  let prodGuardando = false;
+  let prodError = '';
+  const CATEGORIAS = ['Mesas', 'Sillas', 'Roperos', 'Puertas', 'Cocina'];
+  const MADERAS = ['Roble', 'Mara', 'Cedro', 'Pino', 'Melamina'];
+  const nuevoForm = (): UpsertProductPayload => ({
+    name: '', category: 'Mesas', woodType: 'Roble', dimensions: '180 x 90 x 76 cm',
+    price: 1800, estimatedDays: 10, stock: 3, description: '',
+  });
+  let prodForm: UpsertProductPayload = nuevoForm();
+
+  async function cargarProductos() {
+    productos = await listProducts().catch(() => []);
+  }
+  function abrirNuevo() {
+    prodEditando = null; prodForm = nuevoForm(); prodFoto = null; prodError = ''; prodModal = true;
+  }
+  function abrirEditar(p: MarketplaceProduct) {
+    prodEditando = p;
+    prodForm = {
+      name: p.name, category: p.category, woodType: p.woodType, dimensions: p.dimensions,
+      price: p.price, estimatedDays: p.estimatedDays, stock: p.stock,
+      description: p.description, imageUrl: p.imageUrl,
+    };
+    prodFoto = null; prodError = ''; prodModal = true;
+  }
+  async function guardarProducto() {
+    prodGuardando = true; prodError = '';
+    try {
+      let imageUrl = prodForm.imageUrl;
+      if (prodFoto) imageUrl = await uploadImageToS3(prodFoto, 'marketplace');
+      const payload = {
+        ...prodForm, imageUrl,
+        price: Number(prodForm.price), stock: Number(prodForm.stock),
+        estimatedDays: Number(prodForm.estimatedDays ?? 10),
+      };
+      if (prodEditando) await updateProduct(prodEditando.id, payload);
+      else await createProduct(payload);
+      prodModal = false;
+      aviso = prodEditando ? 'Mueble actualizado.' : 'Mueble publicado en el Marketplace.';
+      setTimeout(() => (aviso = ''), 4000);
+      await cargarProductos();
+    } catch (e) {
+      prodError = (e as Error).message;
+    } finally {
+      prodGuardando = false;
+    }
+  }
+  function pedirEliminar(p: MarketplaceProduct) {
+    confirmacion = {
+      texto: `¿Quitar «${p.name}» del Marketplace?`,
+      accion: async () => {
+        await deleteProduct(p.id).catch(() => undefined);
+        aviso = 'Mueble eliminado.';
+        setTimeout(() => (aviso = ''), 4000);
+        await cargarProductos();
+      },
+    };
+  }
   import { requireWorkshop, session, logout, acceptHandoff } from './auth';
   import Icon from './Icon.svelte';
 
@@ -87,6 +156,7 @@
       return;
     }
     nombre = session()?.email?.split('@')[0] ?? '';
+    cargarProductos();
     await cargar();
     timer = setInterval(() => cargar(true), 15000);
   });
@@ -213,7 +283,45 @@
 </header>
 
 <main class:con-chat={chatAbierto}>
-  {#if cargando}
+  <div class="tabs">
+    <button class="tab" class:tab-on={tab === 'trabajos'} on:click={() => (tab = 'trabajos')}>
+      <Icon name="clipboard" size={18} /> Mis trabajos
+    </button>
+    <button class="tab" class:tab-on={tab === 'marketplace'} on:click={() => { tab = 'marketplace'; cargarProductos(); }}>
+      <Icon name="store" size={18} /> Muebles en venta
+    </button>
+  </div>
+
+  {#if tab === 'marketplace'}
+    {#if aviso}<p class="aviso"><Icon name="check-circle" size={20} /> {aviso}</p>{/if}
+    <div class="mk-head">
+      <h1><Icon name="store" size={22} /> Muebles en venta ({productos.length})</h1>
+      <button class="btn verde" on:click={abrirNuevo}>+ Publicar mueble</button>
+    </div>
+    {#if productos.length === 0}
+      <section class="card"><p class="big center gris-texto">Todavía no hay muebles publicados.</p></section>
+    {:else}
+      <div class="mk-grid">
+        {#each productos as p (p.id)}
+          <section class="card mk-card">
+            {#if p.imageUrl}<img src={p.imageUrl} alt={p.name} class="mk-img" />{/if}
+            <h2>{p.name}</h2>
+            <p class="gris-texto">{p.category} · madera {p.woodType} · {p.dimensions}</p>
+            <p class="mk-precio">Bs {p.price}
+              <span class="urgencia" class:ok={p.stock > 0} class:rojo={p.stock <= 0}>
+                {p.stock > 0 ? `${p.stock} disponibles` : 'Agotado'}
+              </span>
+            </p>
+            {#if p.carpenterName}<p class="gris-texto">Publicado por {p.carpenterName}</p>{/if}
+            <div class="modal-btns">
+              <button class="btn" on:click={() => abrirEditar(p)}>Editar / Stock</button>
+              <button class="btn gris" on:click={() => pedirEliminar(p)}>Eliminar</button>
+            </div>
+          </section>
+        {/each}
+      </div>
+    {/if}
+  {:else if cargando}
     <p class="big center gris-texto">Cargando tus trabajos…</p>
   {:else if error}
     <section class="card">
@@ -403,6 +511,35 @@
   {/if}
 {/if}
 
+<!-- Formulario de mueble del Marketplace (foto → AWS S3) -->
+{#if prodModal}
+  <div class="fondo" role="presentation" on:click|self={() => (prodModal = false)}>
+    <form class="modal mk-form" on:submit|preventDefault={guardarProducto}>
+      <p class="big"><b>{prodEditando ? 'Editar mueble' : 'Publicar mueble'}</b></p>
+      <label>Nombre<input bind:value={prodForm.name} required /></label>
+      <div class="row">
+        <label>Categoría<select bind:value={prodForm.category}>{#each CATEGORIAS as c}<option>{c}</option>{/each}</select></label>
+        <label>Madera<select bind:value={prodForm.woodType}>{#each MADERAS as m}<option>{m}</option>{/each}</select></label>
+      </div>
+      <label>Medidas<input bind:value={prodForm.dimensions} required /></label>
+      <div class="row">
+        <label>Precio Bs<input type="number" min="1" bind:value={prodForm.price} required /></label>
+        <label>Stock<input type="number" min="0" bind:value={prodForm.stock} required /></label>
+        <label>Días<input type="number" min="1" bind:value={prodForm.estimatedDays} /></label>
+      </div>
+      <label>Descripción<textarea rows="3" bind:value={prodForm.description} required></textarea></label>
+      <label>Foto (se sube al bucket S3)
+        <input type="file" accept="image/*" on:change={(e) => (prodFoto = e.currentTarget.files?.[0] ?? null)} />
+      </label>
+      {#if prodError}<p style="color:#C0392B">{prodError}</p>{/if}
+      <div class="modal-btns">
+        <button type="button" class="btn gris" on:click={() => (prodModal = false)}>Cancelar</button>
+        <button type="submit" class="btn verde" disabled={prodGuardando}>{prodGuardando ? 'Guardando…' : 'Guardar'}</button>
+      </div>
+    </form>
+  </div>
+{/if}
+
 <!-- Confirmación grande y simple -->
 {#if confirmacion}
   <div class="fondo" role="dialog" aria-modal="true" on:click={() => (confirmacion = null)}>
@@ -525,6 +662,19 @@
   .modal-btns .btn { flex: 1; justify-content: center; }
 
   button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+
+  /* ══ Pestañas + Marketplace ══ */
+  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tab { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; border-radius: 12px; border: 1.5px solid #EDE4D8; background: #fff; color: #6B4F2E; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .tab-on { background: #8B5A2B; color: #fff; border-color: #8B5A2B; }
+  .mk-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .mk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .mk-img { width: 100%; aspect-ratio: 8/5; object-fit: cover; border-radius: 10px; margin-bottom: 10px; }
+  .mk-card p { margin: 4px 0; }
+  .mk-precio { display: flex; justify-content: space-between; align-items: center; font-size: 19px; font-weight: 800; color: #8B5A2B; }
+  .mk-form { max-width: 520px; max-height: 92vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .mk-form label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; font-weight: 600; color: #3B2F2F; flex: 1; }
+  .mk-form select, .mk-form textarea { padding: 12px; border-radius: 10px; border: 1.5px solid #ddd; font-size: 15px; font-family: inherit; }
 
   /* ══ Tablet ══ */
   @media (max-width: 940px) {

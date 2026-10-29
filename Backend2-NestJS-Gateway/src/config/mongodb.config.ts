@@ -29,9 +29,22 @@ export class MongodbConfig implements OnModuleInit, OnModuleDestroy {
   }
 
   paymentsModel(): Model<any> {
-    return mongoose.model(
-      'Payment',
-      new Schema({ _id: String }, { strict: false, collection: 'payments' }),
+    return (
+      mongoose.models.Payment ||
+      mongoose.model(
+        'Payment',
+        new Schema({ _id: String }, { strict: false, collection: 'payments' }),
+      )
+    );
+  }
+
+  productsModel(): Model<any> {
+    return (
+      mongoose.models.MarketplaceProduct ||
+      mongoose.model(
+        'MarketplaceProduct',
+        new Schema({ _id: String }, { strict: false, collection: 'marketplace_products' }),
+      )
     );
   }
 

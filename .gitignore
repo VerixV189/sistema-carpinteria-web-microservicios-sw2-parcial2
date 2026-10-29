@@ -48,6 +48,7 @@ pnpm-debug.log*
 **/*.tsbuildinfo
 **/*.timestamp-*
 **/*.local
+Backend2-NestJS-Gateway/uploads/
 
 # --- Backend 3: Python (FastAPI / IA / MCP) ---
 **/__pycache__/

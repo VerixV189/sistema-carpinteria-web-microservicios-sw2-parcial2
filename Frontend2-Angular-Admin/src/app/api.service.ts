@@ -28,7 +28,40 @@ export interface Quotation {
   updatedAt: string;
 }
 
-/** Acceso REST al gateway (cotizaciones/pagos no pasan por GraphQL). */
+export interface MarketplaceProduct {
+  id: string;
+  name: string;
+  category: string;
+  woodType: string;
+  dimensions: string;
+  price: number;
+  estimatedDays: number;
+  stock: number;
+  description: string;
+  iconName: string;
+  imageUrl?: string;
+  carpenterEmail?: string;
+  carpenterName?: string;
+  createdByRole?: 'ADMIN' | 'CARPENTER';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface UpsertProductPayload {
+  name: string;
+  category: string;
+  woodType: string;
+  dimensions: string;
+  price: number;
+  estimatedDays?: number;
+  stock: number;
+  description: string;
+  imageUrl?: string;
+  carpenterEmail?: string;
+  carpenterName?: string;
+}
+
+/** Acceso REST al gateway (cotizaciones, pagos, marketplace y subida S3). */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly base = (() => {
@@ -80,5 +113,50 @@ export class ApiService {
       method: 'POST',
       body: JSON.stringify(finalAmount != null ? { finalAmount } : {}),
     });
+  }
+
+  // — Marketplace CRUD + AWS S3 —
+
+  products(): Promise<MarketplaceProduct[]> {
+    return this.req<MarketplaceProduct[]>('/api/products');
+  }
+
+  createProduct(payload: UpsertProductPayload): Promise<MarketplaceProduct> {
+    return this.req<MarketplaceProduct>('/api/products', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  updateProduct(id: string, payload: UpsertProductPayload): Promise<MarketplaceProduct> {
+    return this.req<MarketplaceProduct>(`/api/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  deleteProduct(id: string): Promise<{ deleted: boolean; id: string }> {
+    return this.req<{ deleted: boolean; id: string }>(`/api/products/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async uploadImageToS3(file: File, folder = 'marketplace'): Promise<string> {
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve((fr.result as string).split(',')[1]);
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
+    });
+    const res = await this.req<{ url: string }>('/api/uploads/s3', {
+      method: 'POST',
+      body: JSON.stringify({
+        fileName: file.name,
+        mimeType: file.type || 'image/jpeg',
+        base64,
+        folder,
+      }),
+    });
+    return res.url;
   }
 }

@@ -6,6 +6,8 @@ import com.carpinteria.business.application.order.dto.CreateOrderCommand;
 import com.carpinteria.business.application.order.dto.DimensionsCommand;
 import com.carpinteria.business.application.order.dto.OrderItemCommand;
 import com.carpinteria.business.application.order.dto.OrderResponse;
+import com.carpinteria.business.domain.carpenter.model.Carpenter;
+import com.carpinteria.business.domain.carpenter.repository.CarpenterRepository;
 import com.carpinteria.business.domain.client.model.Client;
 import com.carpinteria.business.domain.client.model.ContactInfo;
 import com.carpinteria.business.domain.client.repository.ClientRepository;
@@ -22,8 +24,9 @@ import org.springframework.stereotype.Component;
 /**
  * Consumidores (doc §5.5):
  *  - quotation.approved → actualiza pedido vinculado (quotationId) o, si el
- *    cliente aceptó sin pedido previo, CREA el pedido con ítems y la
- *    modalidad de entrega elegida (recojo en taller / envío con GPS).
+ *    cliente aceptó sin pedido previo (o compró en el Marketplace), CREA el
+ *    pedido con ítems, la modalidad de entrega elegida y auto-asigna al
+ *    carpintero si el mueble fue publicado por él.
  *  - payment.completed  → marca pedido listo para producción.
  */
 @Component
@@ -35,15 +38,18 @@ public class DomainEventListener {
     private final CreateOrderUseCase createOrder;
     private final ClientRepository clientRepository;
     private final OrderRepository orderRepository;
+    private final CarpenterRepository carpenterRepository;
 
     public DomainEventListener(UpdateOrderStatusUseCase updateOrderStatus,
                                CreateOrderUseCase createOrder,
                                ClientRepository clientRepository,
-                               OrderRepository orderRepository) {
+                               OrderRepository orderRepository,
+                               CarpenterRepository carpenterRepository) {
         this.updateOrderStatus = updateOrderStatus;
         this.createOrder = createOrder;
         this.clientRepository = clientRepository;
         this.orderRepository = orderRepository;
+        this.carpenterRepository = carpenterRepository;
     }
 
     @RabbitListener(queues = {"business.quotation_approved"})
@@ -93,7 +99,21 @@ public class DomainEventListener {
         // El cliente ya aceptó el precio → el pedido nace aprobado; pasa a
         // producción cuando se confirme el pago completo.
         updateOrderStatus.updateStatus(created.id(), OrderStatus.APPROVED);
-        log.info("Pedido #{} creado y aprobado desde cotización aceptada {}", created.id(), quotationId);
+        if (Boolean.TRUE.equals(payload.get("paid"))) {
+            updateOrderStatus.updateStatus(created.id(), OrderStatus.IN_PRODUCTION);
+        }
+        Object carpenterEmailRaw = payload.get("carpenterEmail");
+        if (carpenterEmailRaw instanceof String carpEmail && !carpEmail.isBlank()) {
+            carpenterRepository.findAll().stream()
+                    .filter(c -> c.getEmail() != null && c.getEmail().equalsIgnoreCase(carpEmail.trim()))
+                    .findFirst()
+                    .ifPresent(carpenter -> {
+                        updateOrderStatus.assignCarpenter(created.id(), carpenter.getId());
+                        log.info("Pedido #{} auto-asignado al carpintero {} (#{})",
+                                created.id(), carpenter.getEmail(), carpenter.getId());
+                    });
+        }
+        log.info("Pedido #{} creado y aprobado desde cotización/marketplace {}", created.id(), quotationId);
     }
 
     /**

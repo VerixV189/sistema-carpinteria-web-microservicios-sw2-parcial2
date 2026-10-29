@@ -5,6 +5,7 @@ import { CarpentersComponent } from './carpenters/carpenters.component';
 import { OrdersComponent } from './orders/orders.component';
 import { DeliveriesComponent } from './deliveries/deliveries.component';
 import { QuotationsComponent } from './quotations/quotations.component';
+import { MarketplaceComponent } from './marketplace/marketplace.component';
 import { ReportsComponent } from './reports/reports.component';
 import { LoginComponent } from './login.component';
 import { adminGuard } from './auth.guard';
@@ -19,6 +20,7 @@ export const routes: Routes = [
   { path: 'pedidos', component: OrdersComponent, canActivate: [adminGuard] },
   { path: 'entregas', component: DeliveriesComponent, canActivate: [adminGuard] },
   { path: 'cotizaciones', component: QuotationsComponent, canActivate: [adminGuard] },
+  { path: 'marketplace', component: MarketplaceComponent, canActivate: [adminGuard] },
   { path: 'reportes', component: ReportsComponent, canActivate: [adminGuard] },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: 'dashboard' },
