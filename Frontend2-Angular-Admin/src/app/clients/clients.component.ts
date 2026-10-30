@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { FormsModule } from '@angular/forms';
 import { Apollo, QueryRef } from 'apollo-angular';
 import { CLIENTS, CREATE_CLIENT, UPDATE_CLIENT, DELETE_CLIENT } from '../graphql.operations';
+import { ApiService, ClientCluster } from '../api.service';
 import { ToastService } from '../toast.service';
 import { ConfirmService } from '../confirm.service';
 import { ActionsMenuComponent, ActionItem } from '../actions-menu.component';
@@ -16,11 +17,41 @@ const SEGMENTS = ['REGULAR', 'VIP', 'WHOLESALE'];
   imports: [CommonModule, ReactiveFormsModule, FormsModule, ActionsMenuComponent],
   template: `
     <div class="toolbar">
-      <h2 class="sec" style="margin:0">Clientes</h2>
+      <h2 class="sec" style="margin:0">Clientes y Segmentación IA (CU1)</h2>
       <div class="grow"></div>
       <input [(ngModel)]="search" placeholder="Buscar nombre o email…" style="width:230px" />
+      <button class="btn btn-ghost" (click)="runClustering()" [disabled]="clustering">
+        {{ clustering ? 'Segmentando con IA…' : 'Segmentar con IA (X-Means)' }}
+      </button>
       <button class="btn" (click)="openForm()">+ Nuevo cliente</button>
     </div>
+
+    @if (clusters.length) {
+      <div class="card" style="margin-bottom:14px;background:#FAF7F2;border:1px solid #EDE4D8">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <strong style="color:#3B2F2F">Resultado de Segmentación IA ({{ clusterAlgorithm }})</strong>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:12px" (click)="clusters = []">Ocultar</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">
+          @for (cl of clusters; track cl.clusterId) {
+            <div style="background:#fff;padding:12px 14px;border-radius:10px;border:1px solid #EDE4D8">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <strong style="color:#8B5A2B">{{ cl.label }}</strong>
+                <span class="badge st-READY">{{ cl.size }} cliente(s)</span>
+              </div>
+              @if (cl.centroid) {
+                <div style="font-size:12px;color:#6d6157;margin-bottom:6px">
+                  Promedio: {{ cl.centroid.total_orders ?? 0 }} pedidos · Bs {{ cl.centroid.total_spent ?? 0 }}
+                </div>
+              }
+              <div style="font-size:12px;color:#3B2F2F">
+                <b>Clientes:</b> {{ clientNamesForCluster(cl) }}
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
 
     <div class="card">
       <table>
@@ -74,10 +105,14 @@ export class ClientsComponent implements OnInit {
   showForm = false;
   editing: any = null;
   saving = false;
+  clustering = false;
+  clusterAlgorithm = 'X-Means';
+  clusters: ClientCluster[] = [];
   private ref?: QueryRef<{ clients: any[] }>;
 
   constructor(
     private apollo: Apollo, fb: FormBuilder,
+    private api: ApiService,
     private toast: ToastService, private confirm: ConfirmService,
   ) {
     this.form = fb.group({
@@ -98,6 +133,29 @@ export class ClientsComponent implements OnInit {
     const q = this.search.trim().toLowerCase();
     if (!q) return this.clients;
     return this.clients.filter((c) => c.name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q));
+  }
+
+  async runClustering(): Promise<void> {
+    this.clustering = true;
+    try {
+      const res = await this.api.clusterClients();
+      this.clusterAlgorithm = res.algorithm || 'X-Means (K-Means + silhouette)';
+      this.clusters = res.clusters ?? [];
+      this.toast.ok(`Segmentación IA completada (${this.clusters.length} grupos)`);
+    } catch (e) {
+      this.toast.fromError(e, 'No se pudo ejecutar la segmentación IA');
+    } finally {
+      this.clustering = false;
+    }
+  }
+
+  clientNamesForCluster(cl: ClientCluster): string {
+    if (!cl.clientIds?.length) return 'Ninguno';
+    const names = cl.clientIds.map((id) => {
+      const found = this.clients.find((c) => String(c.id) === String(id));
+      return found ? found.name : `#${id}`;
+    });
+    return names.join(', ');
   }
 
   actionsOf(c: any): ActionItem[] {

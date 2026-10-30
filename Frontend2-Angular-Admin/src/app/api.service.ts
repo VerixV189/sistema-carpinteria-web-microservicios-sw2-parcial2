@@ -61,6 +61,23 @@ export interface UpsertProductPayload {
   carpenterName?: string;
 }
 
+export interface ClientCluster {
+  clusterId: number;
+  label: string;
+  size: number;
+  clientIds: (number | string)[];
+  centroid?: {
+    total_orders?: number;
+    total_spent?: number;
+    recency_days?: number;
+  };
+}
+
+export interface ClusterClientsResponse {
+  algorithm: string;
+  clusters: ClientCluster[];
+}
+
 /** Acceso REST al gateway (cotizaciones, pagos, marketplace y subida S3). */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -91,6 +108,14 @@ export class ApiService {
 
   quotations(): Promise<Quotation[]> {
     return this.req<Quotation[]>('/api/quotations');
+  }
+
+  /** CU1 — Segmentación inteligente de clientes (X-Means / K-Means en Python IA). */
+  clusterClients(): Promise<ClusterClientsResponse> {
+    return this.req<ClusterClientsResponse>('/api/ai/cluster-clients', {
+      method: 'POST',
+      body: '{}',
+    });
   }
 
   approveQuotation(id: string, orderId?: number): Promise<Quotation> {
