@@ -19,11 +19,12 @@ start();
 export async function loadAdminApp() {
   let base = `${ADMIN_BASE}/admin`;
   let res = await fetch(`${base}/remoteEntry.json`).catch(() => null);
-  if (!res || !res.ok) {
+  const isJson = res && res.ok && (res.headers.get('content-type') ?? '').includes('json');
+  if (!isJson) {
     base = ADMIN_BASE;
     res = await fetch(`${base}/remoteEntry.json`);
   }
-  const manifest = await res.json();
+  const manifest = await res!.json();
   const expose = manifest.exposes.find((e: { key: string }) => e.key === './lifecycles');
   return import(/* @vite-ignore */ `${base}/${expose.outFileName}`);
 }
