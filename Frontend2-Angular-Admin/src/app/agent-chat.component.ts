@@ -1,13 +1,15 @@
 import { Component, ElementRef, ViewChild, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from './auth.service';
+import { OfflineAiService } from './offline-ai.service';
 
 interface Msg { role: 'user' | 'agent'; text: string; }
 
 const PREGUNTAS = [
   '¿Cuántos pedidos hay pendientes?',
-  '¿Qué entregas hay esta semana?',
-  'Dame un resumen del negocio de hoy',
+  '¿Cuáles son los mejores clientes?',
+  '¿Qué muebles tienen stock bajo?',
+  '¿Qué entregas hay programadas?',
 ];
 
 @Component({
@@ -18,7 +20,7 @@ const PREGUNTAS = [
     @if (!open()) {
       <button class="fab" (click)="open.set(true)" aria-label="Abrir asistente">
         <svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>
-        <span>Asistente</span>
+        <span>{{ isLocal ? 'IA Local' : 'Asistente' }}</span>
       </button>
     } @else {
       <div class="chat-fondo" (click)="open.set(false)"></div>
@@ -28,9 +30,22 @@ const PREGUNTAS = [
             <span class="panel-ico">
               <svg viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>
             </span>
-            <div><b>Asistente</b><p>Pregúntame sobre el negocio</p></div>
+            <div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <b>Asistente</b>
+                <span class="mode-badge" [class.local]="isLocal">
+                  {{ isLocal ? 'IA Local Offline' : 'IA Online' }}
+                </span>
+              </div>
+              <p>{{ isLocal ? 'Consultando base de datos local' : 'Conectado + Respaldo IA Local' }}</p>
+            </div>
           </div>
-          <button class="x" (click)="open.set(false)" aria-label="Cerrar">✕</button>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="mode-btn" type="button" (click)="forceLocal = !forceLocal">
+              {{ isLocal ? 'Nube' : 'IA Local' }}
+            </button>
+            <button class="x" (click)="open.set(false)" aria-label="Cerrar">✕</button>
+          </div>
         </div>
 
         <div class="chips">
@@ -66,7 +81,10 @@ const PREGUNTAS = [
     .panel-ico { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 12px; background: #8B5A2B; color: #FAF7F2; }
     .panel-ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .panel-title p { margin: 2px 0 0; font-size: 12px; color: #8a7f75; font-weight: 400; }
-    .x { border: none; background: #EDE4D8; color: #3B2F2F; width: 36px; height: 36px; border-radius: 50%; font-size: 15px; cursor: pointer; }
+    .mode-badge { font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 700; background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+    .mode-badge.local { background: #fef3c7; color: #92400e; border-color: #f59e0b; }
+    .mode-btn { border: 1px solid #D4A574; background: #fff; color: #6B4F2E; border-radius: 8px; padding: 5px 8px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .x { border: none; background: #EDE4D8; color: #3B2F2F; width: 34px; height: 34px; border-radius: 50%; font-size: 15px; cursor: pointer; }
 
     .chips { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
     .chip { background: #fff; border: 1.5px solid #D4A574; color: #6B4F2E; border-radius: 999px; padding: 8px 14px; font-size: 13px; cursor: pointer; text-align: left; }
@@ -94,15 +112,20 @@ export class AgentChatComponent {
   open = model(false);
   input = '';
   loading = false;
+  forceLocal = false;
   preguntas = PREGUNTAS;
   msgs: Msg[] = [
-    { role: 'agent', text: 'Hola. Puedo consultar pedidos, clientes, inventario y generar reportes del negocio.' },
+    { role: 'agent', text: 'Hola. Puedo consultar pedidos, clientes, inventario y generar reportes tanto Online como con IA Local sin internet.' },
   ];
   private sessionId = crypto.randomUUID();
 
   @ViewChild('caja') msgsBox?: ElementRef<HTMLDivElement>;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, public offlineAi: OfflineAiService) {}
+
+  get isLocal(): boolean {
+    return this.offlineAi.offline() || this.forceLocal;
+  }
 
   async send(pregunta?: string) {
     const text = (pregunta ?? this.input).trim();
@@ -111,22 +134,31 @@ export class AgentChatComponent {
     this.msgs.push({ role: 'user', text });
     this.loading = true;
     try {
-      const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-      const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-      const rootDomain = host.replace(/^(www|admin|taller|api)\./, '');
-      const gatewayBase = isHttps ? `https://api.${rootDomain}` : `http://${host}:3000`;
-      const r = await fetch(`${gatewayBase}/api/ai/agent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.auth.session()?.token ?? ''}`,
-        },
-        body: JSON.stringify({ query: text, session_id: this.sessionId }),
-      });
-      const d = await r.json();
-      this.msgs.push({ role: 'agent', text: d.answer ?? 'Sin respuesta.' });
+      if (this.isLocal) {
+        const local = this.offlineAi.askAdminLocalAgent(text);
+        this.msgs.push({ role: 'agent', text: local.answer });
+      } else {
+        const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+        const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
+        const rootDomain = host.replace(/^(www|admin|taller|api)\./, '');
+        const gatewayBase = isHttps ? `https://api.${rootDomain}` : `http://${host}:3000`;
+        const r = await fetch(`${gatewayBase}/api/ai/agent`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.auth.session()?.token ?? ''}`,
+          },
+          body: JSON.stringify({ query: text, session_id: this.sessionId }),
+        });
+        if (!r.ok) throw new Error('status');
+        this.offlineAi.markNetworkSuccess();
+        const d = await r.json();
+        this.msgs.push({ role: 'agent', text: d.answer ?? 'Sin respuesta.' });
+      }
     } catch {
-      this.msgs.push({ role: 'agent', text: 'El asistente no está disponible.' });
+      this.offlineAi.markNetworkFailure();
+      const local = this.offlineAi.askAdminLocalAgent(text);
+      this.msgs.push({ role: 'agent', text: local.answer });
     } finally {
       this.loading = false;
     }

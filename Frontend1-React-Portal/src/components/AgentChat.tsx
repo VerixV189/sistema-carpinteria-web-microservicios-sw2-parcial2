@@ -2,27 +2,30 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { getSession } from '../auth';
 import { Icon } from '../icons';
+import { askLocalAgentForClient, isOffline, subscribeOffline } from '../offline';
 
-interface Msg { role: 'user' | 'agent'; text: string }
+interface Msg { role: 'user' | 'agent'; text: string; mode?: 'local' | 'cloud' }
 
 const PREGUNTAS = [
   'Quiero cotizar un mueble',
   '¿En qué va mi pedido?',
+  '¿Qué muebles tienen en stock?',
   '¿Cuándo llega mi entrega?',
 ];
 
-/** Asistente IA del portal — panel acoplado a la derecha (empuja el contenido,
- *  no lo tapa). Solo para usuarios autenticados; el rol limita las herramientas
- *  en el backend: CLIENT ve solo sus pedidos/cotizaciones. */
+/** Asistente IA del portal — panel acoplado a la derecha con soporte IA Local Offline. */
 export default function AgentChat({ open, onToggle }: { open: boolean; onToggle: (v: boolean) => void }) {
   const [msgs, setMsgs] = useState<Msg[]>([
-    { role: 'agent', text: 'Hola, soy el asistente de El Roble. Toca una pregunta o escríbeme tu duda.' },
+    { role: 'agent', text: 'Hola, soy el asistente de El Roble. Funciono tanto Online como con IA Local sin internet.' },
   ]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  const [offline, setOffline] = useState(isOffline());
+  const [useLocalAiOnly, setUseLocalAiOnly] = useState(false);
   const sessionId = useRef(`web-${Math.random().toString(36).slice(2, 10)}`);
   const bottom = useRef<HTMLDivElement>(null);
 
+  useEffect(() => subscribeOffline(() => setOffline(isOffline())), []);
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs, open]);
 
   const send = async (pregunta?: string) => {
@@ -32,10 +35,17 @@ export default function AgentChat({ open, onToggle }: { open: boolean; onToggle:
     setMsgs((m) => [...m, { role: 'user', text }]);
     setBusy(true);
     try {
-      const r = await api.agent(text, sessionId.current);
-      setMsgs((m) => [...m, { role: 'agent', text: r.answer ?? 'Sin respuesta.' }]);
+      if (offline || useLocalAiOnly) {
+        const localRes = askLocalAgentForClient(text, getSession()?.email);
+        setMsgs((m) => [...m, { role: 'agent', text: localRes.answer, mode: 'local' }]);
+      } else {
+        const r = await api.agent(text, sessionId.current);
+        const isLocal = r.source === 'local-ai';
+        setMsgs((m) => [...m, { role: 'agent', text: r.answer ?? 'Sin respuesta.', mode: isLocal ? 'local' : 'cloud' }]);
+      }
     } catch {
-      setMsgs((m) => [...m, { role: 'agent', text: 'No pude contactar al asistente. Intenta de nuevo.' }]);
+      const localRes = askLocalAgentForClient(text, getSession()?.email);
+      setMsgs((m) => [...m, { role: 'agent', text: localRes.answer, mode: 'local' }]);
     } finally {
       setBusy(false);
     }
@@ -43,12 +53,14 @@ export default function AgentChat({ open, onToggle }: { open: boolean; onToggle:
 
   if (!getSession()) return null;
 
+  const localActive = offline || useLocalAiOnly;
+
   return (
     <>
       {!open && (
         <button onClick={() => onToggle(true)} style={s.fab} aria-label="Asistente">
           <Icon name="chat" size={22} />
-          <span>Ayuda</span>
+          <span>{localActive ? 'IA Local' : 'Ayuda IA'}</span>
         </button>
       )}
       {open && (
@@ -58,9 +70,28 @@ export default function AgentChat({ open, onToggle }: { open: boolean; onToggle:
             <div style={s.head}>
               <span style={s.headIco}><Icon name="chat" size={18} /></span>
               <div style={{ flex: 1 }}>
-                <b style={{ fontSize: 15 }}>Asistente El Roble</b>
-                <p style={{ margin: '1px 0 0', fontSize: 12, color: '#8a7f75' }}>Pregúntame lo que necesites</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <b style={{ fontSize: 15 }}>Asistente El Roble</b>
+                  <span style={{
+                    fontSize: 10, padding: '2px 7px', borderRadius: 999, fontWeight: 700,
+                    background: localActive ? '#fef3c7' : '#dcfce7',
+                    color: localActive ? '#92400e' : '#166534',
+                    border: `1px solid ${localActive ? '#f59e0b' : '#86efac'}`,
+                  }}>
+                    {localActive ? 'IA Local (Offline)' : 'IA Online'}
+                  </span>
+                </div>
+                <p style={{ margin: '1px 0 0', fontSize: 12, color: '#8a7f75' }}>
+                  {localActive ? 'Motor local activo en tu navegador' : 'Conectado al servidor + Respaldo Local'}
+                </p>
               </div>
+              <button
+                onClick={() => setUseLocalAiOnly((v) => !v)}
+                style={s.modeBtn}
+                title="Cambiar entre IA del Servidor e IA Local del Navegador"
+              >
+                {localActive ? 'Usar Nube' : 'Forzar IA Local'}
+              </button>
               <button onClick={() => onToggle(false)} style={s.close} aria-label="Cerrar">✕</button>
             </div>
             <div style={s.chips}>
@@ -111,9 +142,13 @@ const s: Record<string, React.CSSProperties> = {
     padding: 16, borderLeft: '1px solid #EDE4D8', boxShadow: '-8px 0 30px rgba(0,0,0,.12)',
     fontFamily: 'Inter, system-ui, sans-serif',
   },
-  head: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexShrink: 0, color: '#3B2F2F' },
+  head: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexShrink: 0, color: '#3B2F2F' },
   headIco: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 12, background: '#8B5A2B', color: '#FAF7F2' },
-  close: { border: 'none', background: '#EDE4D8', color: '#3B2F2F', width: 36, height: 36, borderRadius: '50%', fontSize: 15, cursor: 'pointer' },
+  modeBtn: {
+    border: '1px solid #D4A574', background: '#fff', color: '#6B4F2E',
+    borderRadius: 8, padding: '5px 8px', fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+  },
+  close: { border: 'none', background: '#EDE4D8', color: '#3B2F2F', width: 34, height: 34, borderRadius: '50%', fontSize: 15, cursor: 'pointer' },
   chips: { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, marginBottom: 10, flexShrink: 0 },
   chip: { background: '#fff', border: '1.5px solid #D4A574', color: '#6B4F2E', borderRadius: 999, padding: '8px 14px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' },
   body: { flex: '1 1 auto', minHeight: 0, overflowY: 'auto', padding: 12, display: 'flex', flexDirection: 'column', gap: 8, background: '#fff', borderRadius: 12, border: '1px solid #EDE4D8' },

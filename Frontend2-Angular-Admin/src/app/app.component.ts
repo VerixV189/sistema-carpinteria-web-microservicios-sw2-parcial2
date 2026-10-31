@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { AgentChatComponent } from './agent-chat.component';
 import { ToastService } from './toast.service';
 import { ConfirmService } from './confirm.service';
+import { OfflineAiService } from './offline-ai.service';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +18,18 @@ import { ConfirmService } from './confirm.service';
       <div class="layout" [class.con-chat]="chatOpen()">
         <aside class="side">
           <div class="brand"><span class="logo">ER</span><h3>Panel Admin</h3></div>
+
+          <button
+            type="button"
+            class="net-pill"
+            [class.net-offline]="offlineAi.offline()"
+            (click)="offlineAi.toggleForceOffline()"
+            title="Haz clic para cambiar entre Modo Online y Modo Offline + IA Local"
+          >
+            <span class="dot"></span>
+            <span>{{ offlineAi.offline() ? 'Offline · IA Local' : 'Online · Sincronizado' }}</span>
+          </button>
+
           <a routerLink="/dashboard" routerLinkActive="active">
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
             Dashboard
@@ -61,6 +74,16 @@ import { ConfirmService } from './confirm.service';
           </div>
         </aside>
         <main class="content">
+          @if (offlineAi.offline()) {
+            <div class="offline-alert">
+              <div>
+                ⚡ <b>Modo Sin Internet (Offline Activo):</b> Mostrando datos locales sincronizados (Clientes, Pedidos, Carpinteros, Entregas, Marketplace) y <b>Motor IA Local</b> para Reportes SQL, Segmentación y Asistente.
+              </div>
+              @if (offlineAi.isForceOffline()) {
+                <button class="reconnect" (click)="offlineAi.toggleForceOffline(false)">Volver a Online</button>
+              }
+            </div>
+          }
           <router-outlet />
         </main>
         <app-agent-chat [(open)]="chatOpen" />
@@ -87,9 +110,15 @@ import { ConfirmService } from './confirm.service';
   styles: [`
     .layout { display: flex; min-height: 100vh; }
     .side { width: 230px; background: #fff; border-right: 1px solid #eee; padding: 20px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
-    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .logo { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: #8B5A2B; color: #FAF7F2; font-size: 13px; font-weight: 800; }
     .side h3 { margin: 0; color: #8B5A2B; font-size: 17px; }
+    .net-pill { display: flex; align-items: center; gap: 8px; padding: 7px 11px; margin-bottom: 10px; border-radius: 999px; border: 1px solid #86efac; background: #f0fdf4; color: #166534; font-size: 12px; font-weight: 700; cursor: pointer; text-align: left; }
+    .net-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }
+    .net-pill.net-offline { border-color: #f59e0b; background: #fef3c7; color: #92400e; }
+    .net-pill.net-offline .dot { background: #f59e0b; }
+    .offline-alert { background: #fef3c7; border: 1px solid #f59e0b; color: #78350f; padding: 10px 14px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .reconnect { background: #8B5A2B; color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
     .sec { font-size: 10px; text-transform: uppercase; letter-spacing: .09em; color: #a89a8c; margin: 14px 0 2px; padding: 0 12px; }
     .side a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; text-decoration: none; color: #555; font-size: 14px; }
     .side a svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -108,7 +137,13 @@ import { ConfirmService } from './confirm.service';
 export class AppComponent {
   chatOpen = signal(false);
 
-  constructor(private auth: AuthService, private router: Router, public toast: ToastService, public confirm: ConfirmService) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    public toast: ToastService,
+    public confirm: ConfirmService,
+    public offlineAi: OfflineAiService,
+  ) {}
 
   isLogin() { return this.router.url === '/login'; }
   email() { return this.auth.session()?.email ?? ''; }

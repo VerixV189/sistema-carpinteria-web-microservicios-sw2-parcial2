@@ -3,6 +3,7 @@
   import {
     findMyCarpenter, myOrders, updateStep, askAgent,
     listProducts, createProduct, updateProduct, deleteProduct, uploadImageToS3,
+    isOffline, isForceOffline, toggleForceOffline, subscribeOffline,
     type MarketplaceProduct, type UpsertProductPayload,
   } from './api';
 
@@ -140,6 +141,8 @@
     { role: 'agent', text: 'Hola. Toca una pregunta o escríbeme tu duda.' },
   ];
   let agentLoading = false;
+  let offline = isOffline();
+  let unsubNet: (() => void) | null = null;
 
   const PREGUNTAS = [
     '¿Qué tengo que hacer hoy?',
@@ -149,6 +152,7 @@
 
   onMount(async () => {
     acceptHandoff();
+    unsubNet = subscribeOffline(() => { offline = isOffline(); });
     if (!requireWorkshop()) {
       if (location.port === '4204' || location.hostname.startsWith('taller.')) { window.location.href = '/login'; return; }
       denied = true;
@@ -161,7 +165,10 @@
     timer = setInterval(() => cargar(true), 15000);
   });
 
-  onDestroy(() => clearInterval(timer));
+  onDestroy(() => {
+    clearInterval(timer);
+    if (unsubNet) unsubNet();
+  });
 
   async function cargar(silencioso = false) {
     if (!silencioso) { cargando = true; error = ''; }
@@ -277,12 +284,24 @@
 <header class="topbar">
   <div class="brand"><Icon name="hammer" size={22} /><strong>Mi Taller</strong></div>
   <div class="who">
+    <button
+      class="out"
+      style="background:{offline ? '#fef3c7' : '#dcfce7'};color:{offline ? '#92400e' : '#166534'};border-color:{offline ? '#f59e0b' : '#86efac'};font-weight:700"
+      on:click={() => { toggleForceOffline(); offline = isOffline(); cargar(true); cargarProductos(); }}
+    >
+      {offline ? '⚡ Offline · IA Local' : '● Online'}
+    </button>
     <span class="hola">Hola, <b>{nombre}</b></span>
     <button class="out" on:click={salir}><Icon name="logout" size={15} /> Salir</button>
   </div>
 </header>
 
 <main class:con-chat={chatAbierto}>
+  {#if offline}
+    <p class="aviso" style="background:#fef3c7;border-color:#f59e0b;color:#78350f">
+      ⚡ <b>Modo Sin Internet (Offline Activo):</b> Trabajando con pedidos y muebles guardados localmente e <b>IA Local del Taller</b>.
+    </p>
+  {/if}
   <div class="tabs">
     <button class="tab" class:tab-on={tab === 'trabajos'} on:click={() => (tab = 'trabajos')}>
       <Icon name="clipboard" size={18} /> Mis trabajos

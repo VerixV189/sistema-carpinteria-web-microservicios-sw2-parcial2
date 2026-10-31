@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearSession, getSession } from '../auth';
 import { cartCount, subscribeCart } from '../cart';
 import { Icon, Icons } from '../icons';
+import { isForceOffline, isOffline, setForceOffline, subscribeOffline } from '../offline';
 
 interface NavLink {
   to: string;
@@ -33,11 +34,22 @@ export default function Navbar() {
   const navigate = useNavigate();
   const session = getSession();
   const [itemsInCart, setItemsInCart] = useState(cartCount());
+  const [offline, setOffline] = useState(isOffline());
 
   useEffect(() => {
     setItemsInCart(cartCount());
-    return subscribeCart(() => setItemsInCart(cartCount()));
+    const unsubCart = subscribeCart(() => setItemsInCart(cartCount()));
+    const unsubNet = subscribeOffline(() => setOffline(isOffline()));
+    return () => {
+      unsubCart();
+      unsubNet();
+    };
   }, []);
+
+  const toggleOfflineMode = () => {
+    setForceOffline(!isForceOffline());
+    setOffline(isOffline());
+  };
 
   const logout = () => {
     clearSession();
@@ -51,49 +63,75 @@ export default function Navbar() {
     (to === '/admin/clientes' && pathname.startsWith('/admin'));
 
   return (
-    <nav style={styles.nav}>
-      <Link to="/" style={styles.brand}>
-        <span style={styles.logo}>ER</span>
-        <span>Carpintería El Roble</span>
-      </Link>
-      <div style={styles.links}>
-        {visible.map((l) => (
-          <Link
-            key={l.to}
-            to={l.to}
-            style={{ ...styles.link, ...(isActive(l.to) ? styles.active : {}) }}
+    <>
+      <nav style={styles.nav}>
+        <Link to="/" style={styles.brand}>
+          <span style={styles.logo}>ER</span>
+          <span>Carpintería El Roble</span>
+        </Link>
+        <div style={styles.links}>
+          {visible.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              style={{ ...styles.link, ...(isActive(l.to) ? styles.active : {}) }}
+            >
+              <Icon name={l.icon} size={15} />
+              {l.label}
+            </Link>
+          ))}
+        </div>
+        <div style={styles.userArea}>
+          <button
+            onClick={toggleOfflineMode}
+            style={offline ? styles.offlinePill : styles.onlinePill}
+            title="Haz clic para alternar entre Modo Online y Modo Offline + IA Local"
           >
-            <Icon name={l.icon} size={15} />
-            {l.label}
-          </Link>
-        ))}
-      </div>
-      <div style={styles.userArea}>
-        {itemsInCart > 0 && (
-          <Link to="/productos?cart=1" style={styles.cartBtn} title="Ver carrito de compras">
-            <Icon name="package" size={14} />
-            <span>Carrito ({itemsInCart})</span>
-          </Link>
-        )}
-        {session ? (
-          <>
-            <span style={styles.badge}>
-              <Icon name="user" size={13} />
-              {ROLE_LABEL[session.role] ?? session.role}
-            </span>
-            <button onClick={logout} style={styles.btn} title={session.email}>
-              <Icon name="logout" size={14} />
-              Salir
+            <span style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: offline ? '#f59e0b' : '#22c55e',
+              display: 'inline-block',
+            }} />
+            <span>{offline ? 'Offline · IA Local' : 'Online'}</span>
+          </button>
+          {itemsInCart > 0 && (
+            <Link to="/productos?cart=1" style={styles.cartBtn} title="Ver carrito de compras">
+              <Icon name="package" size={14} />
+              <span>Carrito ({itemsInCart})</span>
+            </Link>
+          )}
+          {session ? (
+            <>
+              <span style={styles.badge}>
+                <Icon name="user" size={13} />
+                {ROLE_LABEL[session.role] ?? session.role}
+              </span>
+              <button onClick={logout} style={styles.btn} title={session.email}>
+                <Icon name="logout" size={14} />
+                Salir
+              </button>
+            </>
+          ) : (
+            <Link to="/login" style={styles.btn}>
+              <Icon name="lock" size={14} />
+              Ingresar
+            </Link>
+          )}
+        </div>
+      </nav>
+      {offline && (
+        <div style={styles.offlineBanner}>
+          <span>
+            ⚡ <b>Modo Sin Conexión (Offline Activo):</b> Estás viendo datos locales sincronizados en el navegador y utilizando el motor de <b>IA Local</b> sin internet.
+          </span>
+          {isForceOffline() && (
+            <button onClick={() => setForceOffline(false)} style={styles.reconnectBtn}>
+              Volver a Online
             </button>
-          </>
-        ) : (
-          <Link to="/login" style={styles.btn}>
-            <Icon name="lock" size={14} />
-            Ingresar
-          </Link>
-        )}
-      </div>
-    </nav>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -118,6 +156,38 @@ const styles: Record<string, React.CSSProperties> = {
   },
   active: { background: 'rgba(212,165,116,.15)', color: '#fff' },
   userArea: { display: 'flex', alignItems: 'center', gap: 10 },
+  onlinePill: {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    background: 'rgba(34,197,94,.14)', color: '#86efac', border: '1px solid rgba(34,197,94,.35)',
+    padding: '5px 11px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap',
+  },
+  offlinePill: {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    background: 'rgba(245,158,11,.2)', color: '#fcd34d', border: '1px solid rgba(245,158,11,.5)',
+    padding: '5px 11px', borderRadius: 999, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+  },
+  offlineBanner: {
+    background: 'linear-gradient(90deg, #78350f, #92400e)',
+    color: '#fef3c7',
+    padding: '8px 18px',
+    fontSize: 13,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    borderBottom: '1px solid #b45309',
+  },
+  reconnectBtn: {
+    background: '#fef3c7',
+    color: '#78350f',
+    border: 'none',
+    borderRadius: 6,
+    padding: '4px 10px',
+    fontSize: 12,
+    fontWeight: 700,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
   cartBtn: {
     display: 'inline-flex', alignItems: 'center', gap: 6,
     background: '#D4A574', color: '#3B2F2F', padding: '6px 12px',

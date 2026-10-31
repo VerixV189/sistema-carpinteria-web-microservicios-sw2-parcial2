@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
+import { OfflineAiService } from './offline-ai.service';
 
 export interface QuotationItem {
   description: string;
@@ -78,7 +79,7 @@ export interface ClusterClientsResponse {
   clusters: ClientCluster[];
 }
 
-/** Acceso REST al gateway (cotizaciones, pagos, marketplace y subida S3). */
+/** Acceso REST al gateway con soporte Offline-First + IA Local. */
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly base = (() => {
@@ -88,100 +89,199 @@ export class ApiService {
     return isHttps ? `https://api.${rootDomain}` : `http://${host}:3000`;
   })();
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private offlineAi: OfflineAiService) {}
 
   private async req<T>(path: string, init?: RequestInit): Promise<T> {
-    const r = await fetch(this.base + path, {
-      ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.auth.token() ?? ''}`,
-        ...(init?.headers ?? {}),
-      },
-    });
-    if (!r.ok) {
-      const body = await r.json().catch(() => ({}));
-      throw new Error((body as { message?: string }).message ?? `Error ${r.status}`);
+    if (this.offlineAi.offline()) {
+      throw new Error('OFFLINE_MODE');
     }
-    return r.json() as Promise<T>;
+    try {
+      const r = await fetch(this.base + path, {
+        ...init,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.auth.token() ?? ''}`,
+          ...(init?.headers ?? {}),
+        },
+      });
+      this.offlineAi.markNetworkSuccess();
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error((body as { message?: string }).message ?? `Error ${r.status}`);
+      }
+      return r.json() as Promise<T>;
+    } catch (e) {
+      if (e instanceof TypeError) {
+        this.offlineAi.markNetworkFailure();
+      }
+      throw e;
+    }
   }
 
-  quotations(): Promise<Quotation[]> {
-    return this.req<Quotation[]>('/api/quotations');
+  async quotations(): Promise<Quotation[]> {
+    try {
+      const list = await this.req<Quotation[]>('/api/quotations');
+      this.offlineAi.setQuotations(list);
+      return list;
+    } catch {
+      return this.offlineAi.getQuotations();
+    }
   }
 
-  /** CU1 — Segmentación inteligente de clientes (X-Means / K-Means en Python IA). */
-  clusterClients(): Promise<ClusterClientsResponse> {
-    return this.req<ClusterClientsResponse>('/api/ai/cluster-clients', {
-      method: 'POST',
-      body: '{}',
-    });
+  /** CU1 — Segmentación inteligente de clientes (X-Means / K-Means en Python IA o IA Local Offline). */
+  async clusterClients(): Promise<ClusterClientsResponse> {
+    try {
+      return await this.req<ClusterClientsResponse>('/api/ai/cluster-clients', {
+        method: 'POST',
+        body: '{}',
+      });
+    } catch {
+      return this.offlineAi.clusterClientsLocally();
+    }
   }
 
-  approveQuotation(id: string, orderId?: number): Promise<Quotation> {
-    return this.req<Quotation>(`/api/quotations/${id}/approve`, {
-      method: 'POST',
-      body: JSON.stringify(orderId ? { orderId } : {}),
-    });
+  async approveQuotation(id: string, orderId?: number): Promise<Quotation> {
+    try {
+      return await this.req<Quotation>(`/api/quotations/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify(orderId ? { orderId } : {}),
+      });
+    } catch {
+      const list = this.offlineAi.getQuotations().map((q) =>
+        q.id === id ? { ...q, status: 'APPROVED' as const, updatedAt: new Date().toISOString() } : q,
+      );
+      this.offlineAi.setQuotations(list);
+      return list.find((q) => q.id === id)!;
+    }
   }
 
-  rejectQuotation(id: string): Promise<Quotation> {
-    return this.req<Quotation>(`/api/quotations/${id}/reject`, {
-      method: 'POST',
-      body: '{}',
-    });
+  async rejectQuotation(id: string): Promise<Quotation> {
+    try {
+      return await this.req<Quotation>(`/api/quotations/${id}/reject`, {
+        method: 'POST',
+        body: '{}',
+      });
+    } catch {
+      const list = this.offlineAi.getQuotations().map((q) =>
+        q.id === id ? { ...q, status: 'REJECTED' as const, updatedAt: new Date().toISOString() } : q,
+      );
+      this.offlineAi.setQuotations(list);
+      return list.find((q) => q.id === id)!;
+    }
   }
 
   /** El taller fija el precio formal y se lo envía al cliente → QUOTED. */
-  sendQuotation(id: string, finalAmount?: number): Promise<Quotation> {
-    return this.req<Quotation>(`/api/quotations/${id}/send`, {
-      method: 'POST',
-      body: JSON.stringify(finalAmount != null ? { finalAmount } : {}),
-    });
+  async sendQuotation(id: string, finalAmount?: number): Promise<Quotation> {
+    try {
+      return await this.req<Quotation>(`/api/quotations/${id}/send`, {
+        method: 'POST',
+        body: JSON.stringify(finalAmount != null ? { finalAmount } : {}),
+      });
+    } catch {
+      const list = this.offlineAi.getQuotations().map((q) =>
+        q.id === id
+          ? {
+              ...q,
+              status: 'QUOTED' as const,
+              finalAmount: finalAmount ?? q.totalAmount,
+              payableAmount: finalAmount ?? q.totalAmount,
+              updatedAt: new Date().toISOString(),
+            }
+          : q,
+      );
+      this.offlineAi.setQuotations(list);
+      return list.find((q) => q.id === id)!;
+    }
   }
 
-  // — Marketplace CRUD + AWS S3 —
+  // — Marketplace CRUD + AWS S3 + Caché Offline —
 
-  products(): Promise<MarketplaceProduct[]> {
-    return this.req<MarketplaceProduct[]>('/api/products');
+  async products(): Promise<MarketplaceProduct[]> {
+    try {
+      const list = await this.req<MarketplaceProduct[]>('/api/products');
+      this.offlineAi.setProducts(list);
+      return list;
+    } catch {
+      return this.offlineAi.getProducts();
+    }
   }
 
-  createProduct(payload: UpsertProductPayload): Promise<MarketplaceProduct> {
-    return this.req<MarketplaceProduct>('/api/products', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+  async createProduct(payload: UpsertProductPayload): Promise<MarketplaceProduct> {
+    try {
+      const created = await this.req<MarketplaceProduct>('/api/products', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      this.offlineAi.setProducts([created, ...this.offlineAi.getProducts()]);
+      return created;
+    } catch {
+      const created: MarketplaceProduct = {
+        id: `local-${Date.now()}`,
+        name: payload.name,
+        category: payload.category,
+        woodType: payload.woodType,
+        dimensions: payload.dimensions,
+        price: payload.price,
+        estimatedDays: payload.estimatedDays ?? 10,
+        stock: payload.stock,
+        description: payload.description,
+        iconName: 'table_restaurant',
+        imageUrl: payload.imageUrl,
+        carpenterEmail: payload.carpenterEmail,
+        carpenterName: payload.carpenterName,
+        createdByRole: 'ADMIN',
+      };
+      this.offlineAi.setProducts([created, ...this.offlineAi.getProducts()]);
+      return created;
+    }
   }
 
-  updateProduct(id: string, payload: UpsertProductPayload): Promise<MarketplaceProduct> {
-    return this.req<MarketplaceProduct>(`/api/products/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload),
-    });
+  async updateProduct(id: string, payload: UpsertProductPayload): Promise<MarketplaceProduct> {
+    try {
+      return await this.req<MarketplaceProduct>(`/api/products/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      const list = this.offlineAi.getProducts().map((p) => (p.id === id ? { ...p, ...payload } : p));
+      this.offlineAi.setProducts(list);
+      return list.find((p) => p.id === id)!;
+    }
   }
 
-  deleteProduct(id: string): Promise<{ deleted: boolean; id: string }> {
-    return this.req<{ deleted: boolean; id: string }>(`/api/products/${id}`, {
-      method: 'DELETE',
-    });
+  async deleteProduct(id: string): Promise<{ deleted: boolean; id: string }> {
+    try {
+      return await this.req<{ deleted: boolean; id: string }>(`/api/products/${id}`, {
+        method: 'DELETE',
+      });
+    } catch {
+      this.offlineAi.setProducts(this.offlineAi.getProducts().filter((p) => p.id !== id));
+      return { deleted: true, id };
+    }
   }
 
   async uploadImageToS3(file: File, folder = 'marketplace'): Promise<string> {
-    const base64 = await new Promise<string>((resolve, reject) => {
+    const dataUrl = await new Promise<string>((resolve, reject) => {
       const fr = new FileReader();
-      fr.onload = () => resolve((fr.result as string).split(',')[1]);
+      fr.onload = () => resolve(fr.result as string);
       fr.onerror = reject;
       fr.readAsDataURL(file);
     });
-    const res = await this.req<{ url: string }>('/api/uploads/s3', {
-      method: 'POST',
-      body: JSON.stringify({
-        fileName: file.name,
-        mimeType: file.type || 'image/jpeg',
-        base64,
-        folder,
-      }),
-    });
-    return res.url;
+    try {
+      const base64 = dataUrl.split(',')[1];
+      const res = await this.req<{ url: string }>('/api/uploads/s3', {
+        method: 'POST',
+        body: JSON.stringify({
+          fileName: file.name,
+          mimeType: file.type || 'image/jpeg',
+          base64,
+          folder,
+        }),
+      });
+      return res.url;
+    } catch {
+      // En modo offline devolvemos el DataURL local para que la imagen se vea sin internet
+      return dataUrl;
+    }
   }
 }
