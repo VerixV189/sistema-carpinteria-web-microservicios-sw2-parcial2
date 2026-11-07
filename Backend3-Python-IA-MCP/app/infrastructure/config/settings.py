@@ -10,9 +10,10 @@ class Settings(BaseSettings):
     mcp_api_key: str | None = "carpinteria-mcp-dev"  # MCP exige Bearer (cambiar en prod)
     internal_secret: str = "carpinteria-internal-dev"  # mesh servicio↔servicio (cambiar en prod)
 
-    ollama_host: str = "http://localhost:11434"
-    ollama_model: str = "llama3.2:3b"
-    ollama_timeout: int = 30
+    ollama_host: str = "http://54.221.53.145:8443"
+    ollama_api_key: str | None = "5ac58f4bd44cb7697a1d1aa481ca4bf6"
+    ollama_model: str = "llama3.2:latest"
+    ollama_timeout: int = 60
 
     # LLM del agente — Groq (OpenAI-compatible). Si hay key, tiene prioridad sobre Ollama.
     groq_api_key: str | None = None

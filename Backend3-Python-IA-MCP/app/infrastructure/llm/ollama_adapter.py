@@ -15,12 +15,19 @@ log = logging.getLogger("ollama")
 class OllamaAdapter:
     def __init__(self) -> None:
         self.base = settings.ollama_host.rstrip("/")
+        self.api_key = settings.ollama_api_key
         self.model = settings.ollama_model
         self.timeout = settings.ollama_timeout
 
+    @property
+    def _headers(self) -> dict[str, str]:
+        if self.api_key:
+            return {"X-API-Key": self.api_key}
+        return {}
+
     def is_available(self) -> bool:
         try:
-            r = httpx.get(f"{self.base}/api/tags", timeout=3)
+            r = httpx.get(f"{self.base}/api/tags", headers=self._headers, timeout=5)
             return r.status_code == 200
         except Exception:
             return False
@@ -36,7 +43,12 @@ class OllamaAdapter:
         if system:
             payload["system"] = system
         try:
-            r = httpx.post(f"{self.base}/api/generate", json=payload, timeout=self.timeout)
+            r = httpx.post(
+                f"{self.base}/api/generate",
+                json=payload,
+                headers=self._headers,
+                timeout=self.timeout,
+            )
             r.raise_for_status()
             return r.json().get("response", "").strip()
         except Exception as e:
