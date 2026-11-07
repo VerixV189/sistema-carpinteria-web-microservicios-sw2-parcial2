@@ -43,8 +43,12 @@ export class UploadsController {
       process.env.S3_BUCKET ||
       process.env.AWS_BUCKET ||
       process.env.MINIO_BUCKET_PHOTOS ||
-      '';
-    const region = process.env.AWS_REGION || 'us-east-1';
+      'nestjs-archivos-proyecto-erik-2026';
+    const region =
+      process.env.AWS_S3_REGION ||
+      process.env.S3_REGION ||
+      process.env.AWS_DEFAULT_REGION ||
+      'us-east-2';
     const accessKey = process.env.AWS_ACCESS_KEY_ID || '';
     const secretKey = process.env.AWS_SECRET_ACCESS_KEY || '';
     const enabled =
@@ -131,6 +135,12 @@ export class UploadsController {
     };
   }
 
+  /** Subida interna (sin JWT, autenticada con x-internal-secret) para recibos PDF desde Backend4-PHP. */
+  @Post('s3-internal')
+  async uploadInternalToS3(@Body() dto: UploadS3Dto, @Req() req: Request) {
+    return this.uploadToS3(dto, req);
+  }
+
   /** Subida de imagen a AWS S3 (con copia en caché local del Gateway). */
   @Post('s3')
   @UseGuards(JwtAuthGuard)
@@ -145,11 +155,13 @@ export class UploadsController {
 
     const folder = (dto.folder || 'marketplace').replace(/[^a-zA-Z0-9_-]/g, '');
     const mime = dto.mimeType || 'image/jpeg';
-    const ext = mime.includes('png')
-      ? 'png'
-      : mime.includes('webp')
-        ? 'webp'
-        : 'jpg';
+    const ext = mime.includes('pdf')
+      ? 'pdf'
+      : mime.includes('png')
+        ? 'png'
+        : mime.includes('webp')
+          ? 'webp'
+          : 'jpg';
     const baseName = (dto.fileName || 'mueble')
       .replace(/\.[^.]+$/, '')
       .replace(/[^a-zA-Z0-9_-]/g, '_')
@@ -167,32 +179,36 @@ export class UploadsController {
     let s3Uploaded = false;
     let s3ObjectUrl: string | null = null;
     if (s3.enabled) {
-      try {
-        const signed = this.buildS3SignedHeaders(
-          'PUT',
-          s3.bucket,
-          s3.region,
-          s3Key,
-          s3.accessKey,
-          s3.secretKey,
-          buffer,
-          mime,
-        );
-        const res = await fetch(signed.url, {
-          method: 'PUT',
-          headers: signed.headers,
-          body: new Uint8Array(buffer),
-        });
-        if (res.ok) {
-          s3Uploaded = true;
-          s3ObjectUrl = signed.url;
-          this.log.log(`Imagen subida a AWS S3: s3://${s3.bucket}/${s3Key}`);
-        } else {
-          const errText = await res.text().catch(() => '');
-          this.log.warn(`AWS S3 PUT devolvió ${res.status}: ${errText.slice(0, 180)}`);
+      const regionsToTry = Array.from(new Set([s3.region, 'us-east-2', 'us-east-1']));
+      for (const reg of regionsToTry) {
+        try {
+          const signed = this.buildS3SignedHeaders(
+            'PUT',
+            s3.bucket,
+            reg,
+            s3Key,
+            s3.accessKey,
+            s3.secretKey,
+            buffer,
+            mime,
+          );
+          const res = await fetch(signed.url, {
+            method: 'PUT',
+            headers: signed.headers,
+            body: new Uint8Array(buffer),
+          });
+          if (res.ok) {
+            s3Uploaded = true;
+            s3ObjectUrl = signed.url;
+            this.log.log(`Archivo subido a AWS S3 (${reg}): s3://${s3.bucket}/${s3Key}`);
+            break;
+          } else {
+            const errText = await res.text().catch(() => '');
+            this.log.warn(`AWS S3 PUT (${reg}) devolvió ${res.status}: ${errText.slice(0, 180)}`);
+          }
+        } catch (e) {
+          this.log.warn(`No se pudo subir a S3 en ${reg} (${(e as Error).message})`);
         }
-      } catch (e) {
-        this.log.warn(`No se pudo subir a S3 (${(e as Error).message}), sirviendo desde almacenamiento local`);
       }
     }
 
