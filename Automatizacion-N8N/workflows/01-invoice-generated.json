@@ -194,7 +194,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { session: 'default', chatId: $('Resolver chatId').item.json.chatId, file: { mimetype: 'application/pdf', filename: `recibo-${$('Resolver chatId').item.json.series}-${$('Resolver chatId').item.json.number}.pdf`, data: 'data:application/pdf;base64,' + $('Descargar PDF').item.binary.data.data } }}",
+        "jsonBody": "={{ ({ session: 'default', chatId: $json.chatId, file: { mimetype: 'application/pdf', filename: 'recibo-' + $('Resolver chatId').item.json.series + '-' + $('Resolver chatId').item.json.number + '.pdf' } }) }}",
         "options": {},
         "onError": "continueRegularOutput"
       },
