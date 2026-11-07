@@ -50,10 +50,23 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         await this.channel.assertExchange(this.exchange, 'topic', { durable: true });
         const q = await this.channel.assertQueue(ORDER_STATUS_QUEUE, { durable: true });
         await this.channel.bindQueue(q.queue, this.exchange, 'order.status_changed');
+        await this.channel.bindQueue(q.queue, this.exchange, 'material.low_stock');
         await this.channel.consume(q.queue, (msg) => {
           if (!msg) return;
+          const rk = msg.fields.routingKey;
           try {
-            this.events.emit('order.status_changed', JSON.parse(msg.content.toString()));
+            const parsed = JSON.parse(msg.content.toString());
+            if (rk === 'material.low_stock') {
+              const n8nBase = this.config.get<string>('N8N_BASE_URL', 'http://127.0.0.1:5678');
+              const secret = this.config.get<string>('WEBHOOK_SECRET', 'carpinteria-webhook-dev');
+              fetch(`${n8nBase}/webhook/material-low-stock`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-webhook-secret': secret },
+                body: JSON.stringify(parsed),
+              }).catch(() => undefined);
+            } else {
+              this.events.emit('order.status_changed', parsed);
+            }
           } catch {
             this.events.emit('order.status_changed', msg.content.toString());
           }

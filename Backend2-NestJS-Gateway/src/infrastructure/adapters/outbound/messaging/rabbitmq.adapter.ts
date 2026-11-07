@@ -66,6 +66,36 @@ export class RabbitMQAdapter implements OnModuleInit, OnModuleDestroy {
       this.channel = null;
       this.log.warn(`[evento falló ${routingKey}] ${(err as Error).message}`);
     }
+
+    // Disparar también el webhook correspondiente en n8n (si está activo)
+    this.notifyN8nWebhook(routingKey, payload as Record<string, any>);
+  }
+
+  private notifyN8nWebhook(routingKey: string, payload: Record<string, any>): void {
+    const n8nBase = this.config.get<string>('N8N_BASE_URL', 'http://127.0.0.1:5678');
+    const secret = this.config.get<string>('WEBHOOK_SECRET', 'carpinteria-webhook-dev');
+    const map: Record<string, string> = {
+      'quotation.approved': 'quotation-approved',
+      'payment.completed': 'payment-completed',
+      'material.low_stock': 'material-low-stock',
+    };
+    const hook = map[routingKey];
+    if (!hook) return;
+
+    const enriched = {
+      ...payload,
+      clientEmail: payload?.clientEmail || payload?.clientId,
+      totalPrice: payload?.totalPrice ?? payload?.totalAmount ?? payload?.amount,
+    };
+
+    fetch(`${n8nBase}/webhook/${hook}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-webhook-secret': secret,
+      },
+      body: JSON.stringify(enriched),
+    }).catch(() => undefined);
   }
 
   async onModuleDestroy(): Promise<void> {
