@@ -223,6 +223,13 @@ export class ProductController {
 
     const saved = await this.repository.save(updated);
     this.log.log(`Mueble Marketplace actualizado: ${saved.id} por ${req.user.email}`);
+    if (saved.stock <= 2) {
+      await this.events.publish('material.low_stock', {
+        materialName: `${saved.name} (${saved.woodType})`,
+        stock: saved.stock,
+        minStock: 3,
+      });
+    }
     return saved;
   }
 
@@ -289,10 +296,17 @@ export class ProductController {
       throw new BadRequestException('El pago fue rechazado por la pasarela');
     }
 
-    // Descontar stock en MongoDB
+    // Descontar stock en MongoDB y alertar si queda con stock bajo
     for (const entry of resolvedItems) {
       entry.product.stock = Math.max(0, entry.product.stock - entry.quantity);
       await this.repository.save(entry.product);
+      if (entry.product.stock <= 2) {
+        await this.events.publish('material.low_stock', {
+          materialName: `${entry.product.name} (${entry.product.woodType})`,
+          stock: entry.product.stock,
+          minStock: 3,
+        });
+      }
     }
 
     // Determinar carpintero autor (si alguno de los muebles fue publicado por un carpintero)

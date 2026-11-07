@@ -31,6 +31,7 @@ from app.application.check_delivery import check_delivery_date
 from app.application.estimate_furniture import estimate_furniture
 from app.application.generate_report import generate_report
 from app.infrastructure.external.business_client import business_client
+from app.infrastructure.llm.provider import llm
 from app.mcp.tools.tools_impl import search_inventory
 
 log = logging.getLogger("agent")
@@ -52,7 +53,7 @@ _DESTRUCTIVE = ("cancela", "cancelar", "elimina", "eliminar", "borra", "borrar",
 # Matriz de herramientas por rol. ADMIN e internos (n8n, sin rol) acceden
 # a todo; CLIENT solo lectura scopiada a sus datos; CARPENTER a operación
 # de taller (pedidos, entregas, inventario) sin reportes administrativos.
-_CLIENT_TOOLS = {"estimate", "check_delivery_date", "list_orders", "delivery_lookup"}
+_CLIENT_TOOLS = {"estimate", "check_delivery_date", "list_orders", "delivery_lookup", "inventory"}
 _CARPENTER_TOOLS = _CLIENT_TOOLS | {"schedule_delivery", "auto_schedule", "inventory"}
 _ROLE_TOOLS = {"CLIENT": _CLIENT_TOOLS, "CARPENTER": _CARPENTER_TOOLS}
 _ROLE_DENY_MSG = {
@@ -163,20 +164,32 @@ def _auto_schedule() -> dict:
             "data": {"scheduled": scheduled, "skipped": skipped}}
 
 
+_ORDER_STATUS_ES = {
+    "PENDING": "Pendiente de revisión",
+    "APPROVED": "Aprobado",
+    "IN_PRODUCTION": "En fabricación en el taller",
+    "READY": "Terminado y listo para entrega",
+    "DELIVERED": "Entregado",
+    "CANCELLED": "Cancelado",
+}
+
+
 def _list_orders(lower: str, client_id: int | None = None) -> dict:
     status = next((v for k, v in _STATUS_MAP.items() if k in lower), None)
     orders = business_client.list_orders(status)
     if client_id is not None:
         orders = [o for o in (orders or []) if o.get("clientId") == client_id]
     if not orders:
-        label = f" en estado {status}" if status else ""
+        label = f" en estado {_ORDER_STATUS_ES.get(status, status)}" if status else ""
         who = "tuyos" if client_id is not None else ""
-        return {"answer": f"No hay pedidos {who}{label}.".replace("  ", " "),
+        return {"answer": f"No tienes pedidos registrados {who}{label}.".replace("  ", " "),
                 "tool": "list_orders", "data": []}
-    lines = [f"#{o['id']} · {o.get('description', '?')} · {o.get('status')}"
-             for o in orders[:10]]
+    lines = [
+        f"• Pedido #{o['id']}: {o.get('description', '?')} — Estado: {_ORDER_STATUS_ES.get(o.get('status'), o.get('status'))}"
+        for o in orders[:10]
+    ]
     suffix = f" (y {len(orders) - 10} más)" if len(orders) > 10 else ""
-    return {"answer": f"{len(orders)} pedido(s){suffix}:\n" + "\n".join(lines),
+    return {"answer": f"Tienes {len(orders)} pedido(s){suffix}:\n" + "\n".join(lines),
             "tool": "list_orders", "data": orders}
 
 
@@ -327,20 +340,54 @@ def _step_schedule(order_id: int, date_str: str | None,
             "tool": "scheduleDelivery", "data": result}
 
 
+_FURNITURE_ES = {
+    "CHAIR": "Silla",
+    "TABLE": "Mesa",
+    "DESK": "Escritorio",
+    "WARDROBE": "Ropero / Clóset",
+    "SHELF": "Estante / Repisa",
+    "BED": "Cama",
+    "CABINET": "Alacena / Mueble",
+    "OTHER": "Mueble a medida",
+}
+
+
 def _step_estimate(text: str) -> dict:
     est = estimate_furniture(description=text)
-    return {"answer": f"Estimación: {est.furniture_type.value} ~"
-                      f"{est.estimated_price:,.0f} {est.currency} "
-                      f"(confianza {est.confidence:.0%}).",
+    has_wood = any(w in text.lower() for w in _WOOD_TYPES)
+    has_dims = bool(re.search(r"\d+\s*(?:x|m|cm|mts|metros)", text.lower()))
+    if est.furniture_type.value == "OTHER" and not has_wood and not has_dims:
+        return {
+            "answer": (
+                "¡Claro! Para darte un presupuesto aproximado al instante, "
+                "cuéntame qué mueble te gustaría cotizar (por ejemplo: mesa de comedor, "
+                "escritorio, ropero, silla o cama), en qué tipo de madera lo prefieres "
+                "(Mara, Roble, Cedro, Pino o Melamina) y sus medidas aproximadas."
+            ),
             "tool": "estimate_furniture_cost",
-            "data": {"furnitureType": est.furniture_type.value,
-                     "estimatedPrice": est.estimated_price,
-                     "confidence": est.confidence, "factors": est.factors}}
+            "data": None,
+        }
+    f_label = _FURNITURE_ES.get(est.furniture_type.value, est.furniture_type.value)
+    return {
+        "answer": (
+            f"Precio estimado para tu {f_label}: aproximadamente "
+            f"Bs {est.estimated_price:,.0f} ({est.currency}) "
+            f"(nivel de confianza del modelo: {est.confidence:.0%}). "
+            f"Si deseas una cotización formal del taller, puedes enviarla desde la sección «Cotizar a Medida»."
+        ),
+        "tool": "estimate_furniture_cost",
+        "data": {
+            "furnitureType": est.furniture_type.value,
+            "estimatedPrice": est.estimated_price,
+            "confidence": est.confidence,
+            "factors": est.factors,
+        },
+    }
 
 
 _WOOD_TYPES = ("mara", "cedro", "roble", "pino", "melamina", "caoba",
                "nogal", "tajibo")
-_INV_STOP = r"(inventario|stock|materiales?|de|del|la|el|los|las|hay|bajo|s|" \
+_INV_STOP = r"(inventario|stock|materiales?|muebles?|productos?|cat[aá]logo|de|del|la|el|los|las|hay|bajo|s|" \
             r"cu[aá]nt[oa]s?|queda[nr]?|madera|tiene[n]?|disponible|qu[eé]|" \
             r"en|para|con|un[oa]?|es|se|me|te|dime|cuenta|revisa|ver|mucho)"
 
@@ -470,6 +517,29 @@ def _regex_plan(lower: str, ctx: dict) -> list[dict]:
     return steps
 
 
+def _synthesize_with_llm(query: str, raw_answer: str, role: str | None = None) -> str:
+    """Usa Ollama (o Groq) para redactar una respuesta natural y amable en español
+    a partir de los datos reales obtenidos de las herramientas."""
+    client = llm()
+    if not client.is_available():
+        return raw_answer
+    system_prompt = (
+        "Eres el Asistente Virtual de 'Carpintería El Roble' en Santa Cruz, Bolivia. "
+        "Responde en español de forma amable, clara, natural y concisa (máximo 4 oraciones o viñetas). "
+        "Usa ÚNICAMENTE los datos reales proporcionados en 'Datos del sistema'; "
+        "NO inventes números de pedido, precios ni fechas que no estén allí. "
+        "Traduce cualquier estado en inglés al español (IN_PRODUCTION = En fabricación en el taller, "
+        "APPROVED = Aprobado, PENDING = Pendiente, READY = Listo para entrega, DELIVERED = Entregado)."
+    )
+    prompt = (
+        f"Consulta del usuario ({role or 'CLIENT'}): {query}\n\n"
+        f"Datos del sistema:\n{raw_answer}\n\n"
+        "Redacta tu respuesta para el usuario:"
+    )
+    generated = client.generate(prompt, system=system_prompt)
+    return generated if generated else raw_answer
+
+
 def agent_answer(query: str, session_id: str | None = None,
                  role: str | None = None, user_email: str | None = None) -> dict:
     """Procesa una consulta del asistente → {answer, tool, data}.
@@ -504,22 +574,55 @@ def agent_answer(query: str, session_id: str | None = None,
         steps = _regex_plan(lower, ctx)
         source = "heuristic"
     if not steps:
-        return {"answer": "No entendí la solicitud. Puedo consultar entregas, "
-                          "agendar, verificar cupo, cotizar, revisar inventario "
-                          "o generar reportes.", "tool": "none", "data": None}
+        # Conversación libre o consulta general respondida por Ollama
+        client = llm()
+        if client.is_available():
+            reply = client.generate(
+                q,
+                system=(
+                    "Eres el Asistente Virtual de 'Carpintería El Roble' en Santa Cruz, Bolivia. "
+                    "Trabajamos con maderas Mara, Roble, Cedro, Pino y Melamina. "
+                    "Ayudas a los clientes a cotizar muebles a medida, consultar el estado de sus pedidos, "
+                    "ver entregas y disponibilidad. Responde en español de forma breve y cordial."
+                ),
+            )
+            if reply:
+                return {"answer": reply, "tool": "chat_llm", "data": None, "source": "llm", "steps": 0}
+        return {"answer": "¡Hola! Soy el asistente de Carpintería El Roble. Puedo ayudarte a "
+                          "cotizar un mueble a medida, revisar en qué estado están tus pedidos, "
+                          "consultar tu fecha de entrega o ver maderas en stock.",
+                "tool": "none", "data": None}
 
     # — Filtro por rol: cada superficie solo sus herramientas —
     allowed = _ROLE_TOOLS.get(role or "")
     if allowed is not None:
+        raw_tools = {s.get("tool") for s in steps}
         steps = [s for s in steps if s.get("tool") in allowed]
         if not steps:
+            admin_kw = ("ganancia", "ingreso", "venta", "reporte", "informe",
+                        "kpi", "estadística", "estadistica", "agenda", "asigna")
+            if raw_tools == {"report"} and not any(k in lower for k in admin_kw):
+                client = llm()
+                if client.is_available():
+                    reply = client.generate(
+                        q,
+                        system=(
+                            "Eres el Asistente Virtual de 'Carpintería El Roble' en Santa Cruz, Bolivia. "
+                            "Trabajamos con maderas Mara, Roble, Cedro, Pino y Melamina. "
+                            "Ayudas a los clientes con dudas sobre maderas, muebles a medida, cuidados "
+                            "y funcionamiento del taller. Responde en español de forma breve y cordial."
+                        ),
+                    )
+                    if reply:
+                        return {"answer": reply, "tool": "chat_llm", "data": None, "source": "llm", "steps": 0}
             return {"answer": _ROLE_DENY_MSG.get(role, "No puedo hacer eso."),
                     "tool": "role_guard", "data": None}
 
     # — Ejecutor de pasos en orden —
     results = [_exec_step(s, ctx) for s in steps]
     tools = [r["tool"] for r in results]
-    answer = "\n".join(r["answer"] for r in results)
+    raw_answer = "\n".join(r["answer"] for r in results)
+    answer = _synthesize_with_llm(q, raw_answer, role)
 
     last = results[-1]
     order_id = next((s.get("order_id") for s in reversed(steps)
