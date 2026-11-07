@@ -1,3 +1,4 @@
+import 'zone.js';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
@@ -13,8 +14,8 @@ const lifecycles = singleSpaAngular({
   Router,
   NavigationStart,
   NgZone,
-  domElementGetter: () =>
-    document.getElementById('admin-slot') ?? document.body,
+  domElementGetter: (props: any) =>
+    props?.domElement ?? document.getElementById('admin-slot') ?? document.body,
 });
 
 // Standalone (sin single-spa) para `ng serve` directo en dev

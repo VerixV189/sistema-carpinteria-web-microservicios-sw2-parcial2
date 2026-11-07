@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMI xmi.version="1.1" xmlns:UML="omg.org/UML1.3" timestamp="2026-11-04 19:42:00">
+  <XMI.header><XMI.documentation><XMI.exporter>Enterprise Architect</XMI.exporter><XMI.exporterVersion>2.5</XMI.exporterVersion></XMI.documentation></XMI.header>
+  <XMI.content>
+    <UML:Model name="EA_Model" xmi.id="MX_EAID_ROB_ROOT">
+      <UML:Namespace.ownedElement>
+        <UML:Class name="EARootClass" xmi.id="EAID_11111111_5487_4080_A7F4_41526CB0AA00" isRoot="true" isLeaf="false" isAbstract="false"/>
+        <UML:Package name="3.2. Diagramas de Robustez" xmi.id="EAPK_ROB_MAIN" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+          <UML:Namespace.ownedElement>
+            <UML:Package name="CU1 - Segmentacion Inteligente de Clientes" xmi.id="EAPK_ROB_CU1" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Administrador" xmi.id="EAID_ROB_CU1_ACT" visibility="public" namespace="EAPK_ROB_CU1" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="Vista Clientes (Angular Admin)" xmi.id="EAID_ROB_CU1_B1" visibility="public" namespace="EAPK_ROB_CU1" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Controlador Clientes (GraphQL)" xmi.id="EAID_ROB_CU1_C1" visibility="public" namespace="EAPK_ROB_CU1" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Motor Clustering X-Means (Python IA / IA Local)" xmi.id="EAID_ROB_CU1_C2" visibility="public" namespace="EAPK_ROB_CU1" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Cliente" xmi.id="EAID_ROB_CU1_E1" visibility="public" namespace="EAPK_ROB_CU1" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Pedido (Historico RFM)" xmi.id="EAID_ROB_CU1_E2" visibility="public" namespace="EAPK_ROB_CU1" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Pulsa Segmentar con IA" xmi.id="EAID_ROB_CU1_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU1_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU1_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. Solicita segmentacion" xmi.id="EAID_ROB_CU1_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU1_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU1_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Lee clientes" xmi.id="EAID_ROB_CU1_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU1_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU1_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Consulta compras RFM" xmi.id="EAID_ROB_CU1_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU1_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU1_E2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. Ejecuta X-Means" xmi.id="EAID_ROB_CU1_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU1_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU1_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Asigna segmento" xmi.id="EAID_ROB_CU1_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU1_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU1_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="7. Muestra tarjetas de clusters" xmi.id="EAID_ROB_CU1_L7" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU1_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU1_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+            <UML:Package name="CU2 - Gestion de Pedidos y Produccion" xmi.id="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Carpintero / Admin" xmi.id="EAID_ROB_CU2_ACT" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="Panel Pedidos (Angular Admin)" xmi.id="EAID_ROB_CU2_B1" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Consola Taller (Svelte / App Movil)" xmi.id="EAID_ROB_CU2_B2" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Gestor de Produccion (Java Spring GraphQL)" xmi.id="EAID_ROB_CU2_C1" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Notificador Eventos (RabbitMQ)" xmi.id="EAID_ROB_CU2_C2" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Pedido" xmi.id="EAID_ROB_CU2_E1" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Carpintero" xmi.id="EAID_ROB_CU2_E2" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="PasoProduccion" xmi.id="EAID_ROB_CU2_E3" visibility="public" namespace="EAPK_ROB_CU2" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Asigna carpintero al pedido" xmi.id="EAID_ROB_CU2_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. Mutation assignCarpenter" xmi.id="EAID_ROB_CU2_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Actualiza orden" xmi.id="EAID_ROB_CU2_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Vincula carpintero" xmi.id="EAID_ROB_CU2_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_E2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. Inicia o termina paso de taller" xmi.id="EAID_ROB_CU2_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_B2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Mutation updateStepStatus" xmi.id="EAID_ROB_CU2_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_B2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="7. Cambia estado del paso" xmi.id="EAID_ROB_CU2_L7" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_E3"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="8. Publica avance" xmi.id="EAID_ROB_CU2_L8" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="9. Refresca progreso en vivo" xmi.id="EAID_ROB_CU2_L9" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU2_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU2_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+            <UML:Package name="CU3 - Cotizacion Asistida por IA" xmi.id="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Cliente" xmi.id="EAID_ROB_CU3_ACT" visibility="public" namespace="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="Pantalla Cotizador (React Portal / Movil)" xmi.id="EAID_ROB_CU3_B1" visibility="public" namespace="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Gestor Multimedia (AWS S3 Uploader)" xmi.id="EAID_ROB_CU3_C1" visibility="public" namespace="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Estimador Precios IA (ONNX / Vision / Local)" xmi.id="EAID_ROB_CU3_C2" visibility="public" namespace="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Controlador Cotizaciones (NestJS Gateway)" xmi.id="EAID_ROB_CU3_C3" visibility="public" namespace="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Cotizacion" xmi.id="EAID_ROB_CU3_E1" visibility="public" namespace="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="ItemCotizacion" xmi.id="EAID_ROB_CU3_E2" visibility="public" namespace="EAPK_ROB_CU3" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Sube foto y medidas del mueble" xmi.id="EAID_ROB_CU3_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU3_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU3_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. Guarda imagen en S3" xmi.id="EAID_ROB_CU3_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU3_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU3_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Solicita estimacion IA" xmi.id="EAID_ROB_CU3_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU3_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU3_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Retorna precio sugerido Bs" xmi.id="EAID_ROB_CU3_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU3_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU3_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. Envia solicitud de cotizacion" xmi.id="EAID_ROB_CU3_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU3_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU3_C3"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Crea documento Cotizacion" xmi.id="EAID_ROB_CU3_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU3_C3"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU3_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="7. Registra items cotizados" xmi.id="EAID_ROB_CU3_L7" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU3_C3"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU3_E2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+            <UML:Package name="CU4 - Programacion de Entregas" xmi.id="EAPK_ROB_CU4" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Administrador" xmi.id="EAID_ROB_CU4_ACT" visibility="public" namespace="EAPK_ROB_CU4" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="Agenda y Mapa de Entregas (Angular)" xmi.id="EAID_ROB_CU4_B1" visibility="public" namespace="EAPK_ROB_CU4" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Predictor Capacidad Diaria (Python IA)" xmi.id="EAID_ROB_CU4_C1" visibility="public" namespace="EAPK_ROB_CU4" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Controlador Logistica (Java GraphQL)" xmi.id="EAID_ROB_CU4_C2" visibility="public" namespace="EAPK_ROB_CU4" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Entrega" xmi.id="EAID_ROB_CU4_E1" visibility="public" namespace="EAPK_ROB_CU4" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Pedido" xmi.id="EAID_ROB_CU4_E2" visibility="public" namespace="EAPK_ROB_CU4" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Selecciona fecha y coordenadas GPS" xmi.id="EAID_ROB_CU4_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU4_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU4_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. Verifica cupo disponible" xmi.id="EAID_ROB_CU4_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU4_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU4_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Consulta despachos del dia" xmi.id="EAID_ROB_CU4_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU4_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU4_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Confirma disponibilidad" xmi.id="EAID_ROB_CU4_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU4_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU4_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. Mutation scheduleDelivery" xmi.id="EAID_ROB_CU4_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU4_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU4_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Registra entrega y ruta GPS" xmi.id="EAID_ROB_CU4_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU4_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU4_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="7. Vincula al pedido" xmi.id="EAID_ROB_CU4_L7" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU4_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU4_E2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+            <UML:Package name="CU5 - Facturacion y Recibos PDF" xmi.id="EAPK_ROB_CU5" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Cliente" xmi.id="EAID_ROB_CU5_ACT" visibility="public" namespace="EAPK_ROB_CU5" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="Vista Mis Recibos (React Portal / Movil)" xmi.id="EAID_ROB_CU5_B1" visibility="public" namespace="EAPK_ROB_CU5" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Consumidor RabbitMQ (Laravel Worker)" xmi.id="EAID_ROB_CU5_C1" visibility="public" namespace="EAPK_ROB_CU5" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Generador PDF (DomPDF + Blade)" xmi.id="EAID_ROB_CU5_C2" visibility="public" namespace="EAPK_ROB_CU5" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Webhook Automatizacion (n8n)" xmi.id="EAID_ROB_CU5_C3" visibility="public" namespace="EAPK_ROB_CU5" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="FacturaRecibo (PostgreSQL Billing)" xmi.id="EAID_ROB_CU5_E1" visibility="public" namespace="EAPK_ROB_CU5" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Recibe evento payment.completed" xmi.id="EAID_ROB_CU5_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU5_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU5_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. Persiste factura y ruta PDF" xmi.id="EAID_ROB_CU5_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU5_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU5_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Dispara flujo n8n" xmi.id="EAID_ROB_CU5_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU5_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU5_C3"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Consulta y descarga recibo PDF" xmi.id="EAID_ROB_CU5_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU5_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU5_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. GET /api/invoices" xmi.id="EAID_ROB_CU5_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU5_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU5_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Entrega archivo PDF" xmi.id="EAID_ROB_CU5_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU5_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU5_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+            <UML:Package name="CU6 - Pagos en Linea" xmi.id="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Cliente" xmi.id="EAID_ROB_CU6_ACT" visibility="public" namespace="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="Pasarela de Pago (React Portal / Movil)" xmi.id="EAID_ROB_CU6_B1" visibility="public" namespace="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Procesador de Pagos (NestJS Gateway)" xmi.id="EAID_ROB_CU6_C1" visibility="public" namespace="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Publicador Eventos (RabbitMQ Exchange)" xmi.id="EAID_ROB_CU6_C2" visibility="public" namespace="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="LogPago (AWS DynamoDB)" xmi.id="EAID_ROB_CU6_E1" visibility="public" namespace="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Cotizacion" xmi.id="EAID_ROB_CU6_E2" visibility="public" namespace="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Pedido" xmi.id="EAID_ROB_CU6_E3" visibility="public" namespace="EAPK_ROB_CU6" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Ingresa datos de tarjeta y confirma" xmi.id="EAID_ROB_CU6_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU6_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU6_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. POST /api/payments" xmi.id="EAID_ROB_CU6_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU6_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU6_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Guarda auditoria inmutable DynamoDB" xmi.id="EAID_ROB_CU6_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU6_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU6_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Cambia estado a CONVERTED" xmi.id="EAID_ROB_CU6_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU6_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU6_E2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. Crea orden de produccion" xmi.id="EAID_ROB_CU6_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU6_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU6_E3"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Emite evento payment.completed" xmi.id="EAID_ROB_CU6_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU6_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU6_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="7. Confirma pago aprobado" xmi.id="EAID_ROB_CU6_L7" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU6_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU6_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+            <UML:Package name="CU7 - Reportes en Lenguaje Natural e IA Local" xmi.id="EAPK_ROB_CU7" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Administrador" xmi.id="EAID_ROB_CU7_ACT" visibility="public" namespace="EAPK_ROB_CU7" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="Vista Reportes IA (Angular / Movil)" xmi.id="EAID_ROB_CU7_B1" visibility="public" namespace="EAPK_ROB_CU7" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Validador Seguridad SQL (SqlSecurityValidator)" xmi.id="EAID_ROB_CU7_C1" visibility="public" namespace="EAPK_ROB_CU7" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Motor NL-to-SQL (Ollama / IA Local Offline)" xmi.id="EAID_ROB_CU7_C2" visibility="public" namespace="EAPK_ROB_CU7" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Exportador PDF y Excel CSV" xmi.id="EAID_ROB_CU7_C3" visibility="public" namespace="EAPK_ROB_CU7" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Base Solo Lectura (PostgreSQL RO / SQLite Local)" xmi.id="EAID_ROB_CU7_E1" visibility="public" namespace="EAPK_ROB_CU7" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Escribe consulta en espanol" xmi.id="EAID_ROB_CU7_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. Sanitiza contra Prompt Injection" xmi.id="EAID_ROB_CU7_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Genera sentencia SELECT" xmi.id="EAID_ROB_CU7_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Valida SQL de solo lectura" xmi.id="EAID_ROB_CU7_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. Ejecuta consulta segura" xmi.id="EAID_ROB_CU7_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Retorna filas y metricas" xmi.id="EAID_ROB_CU7_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="7. Muestra tabla y conclusion IA" xmi.id="EAID_ROB_CU7_L7" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="8. Solicita exportar PDF o CSV" xmi.id="EAID_ROB_CU7_L8" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="9. Descarga documento offline/online" xmi.id="EAID_ROB_CU7_L9" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU7_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU7_C3"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+            <UML:Package name="CU8 (Opcional) - Marketplace y Compra Directa" xmi.id="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+              <UML:Namespace.ownedElement>
+                <UML:Actor name="Cliente / Carpintero" xmi.id="EAID_ROB_CU8_ACT" visibility="public" namespace="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false"/>
+                <UML:Class name="CRUD Mis Muebles (Taller / Admin)" xmi.id="EAID_ROB_CU8_B1" visibility="public" namespace="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Vitrina y Carrito Marketplace (Portal / Movil)" xmi.id="EAID_ROB_CU8_B2" visibility="public" namespace="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="boundary"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="boundary"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Controlador Productos (NestJS + AWS S3)" xmi.id="EAID_ROB_CU8_C1" visibility="public" namespace="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Controlador Checkout Directo (NestJS + Java)" xmi.id="EAID_ROB_CU8_C2" visibility="public" namespace="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="control"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="control"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="MuebleMarketplace (MongoDB)" xmi.id="EAID_ROB_CU8_E1" visibility="public" namespace="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Class name="Pedido (Auto-asignado al Carpintero)" xmi.id="EAID_ROB_CU8_E2" visibility="public" namespace="EAPK_ROB_CU8" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.stereotype><UML:Stereotype name="entity"/></UML:ModelElement.stereotype>
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="stereotype" value="entity"/><UML:TaggedValue tag="ea_stype" value="Class"/></UML:ModelElement.taggedValue>
+                </UML:Class>
+                <UML:Association name="1. Publica mueble con foto S3 y stock" xmi.id="EAID_ROB_CU8_L1" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU8_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU8_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="2. POST /api/products" xmi.id="EAID_ROB_CU8_L2" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU8_B1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU8_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="3. Guarda en catalogo" xmi.id="EAID_ROB_CU8_L3" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU8_C1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU8_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="4. Compra mueble del carrito" xmi.id="EAID_ROB_CU8_L4" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU8_ACT"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU8_B2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="5. POST /api/products/checkout" xmi.id="EAID_ROB_CU8_L5" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU8_B2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU8_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="6. Descuenta stock disponible" xmi.id="EAID_ROB_CU8_L6" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU8_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU8_E1"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+                <UML:Association name="7. Crea Pedido y asigna al Carpintero autor" xmi.id="EAID_ROB_CU8_L7" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="style" value="3"/><UML:TaggedValue tag="ea_type" value="Association"/><UML:TaggedValue tag="direction" value="Source -&gt; Destination"/></UML:ModelElement.taggedValue>
+                  <UML:Association.connection>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_ROB_CU8_C2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                    <UML:AssociationEnd visibility="public" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_ROB_CU8_E2"><UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue></UML:AssociationEnd>
+                  </UML:Association.connection>
+                </UML:Association>
+              </UML:Namespace.ownedElement>
+            </UML:Package>
+          </UML:Namespace.ownedElement>
+        </UML:Package>
+      </UML:Namespace.ownedElement>
+    </UML:Model>
+    <UML:Diagram name="Robustez CU1 - Segmentacion Inteligente de Clientes" xmi.id="EAID_DIAG_ROB_CU1" diagramType="CustomDiagram" owner="EAPK_ROB_CU1" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU1"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU1_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU1_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU1_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU1_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU1_E1" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=240;Right=1010;Bottom=330;" subject="EAID_ROB_CU1_E2" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU1_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU1_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU1_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU1_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU1_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU1_L6"/>
+        <UML:DiagramElement subject="EAID_ROB_CU1_L7"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+    <UML:Diagram name="Robustez CU2 - Gestion de Pedidos y Produccion" xmi.id="EAID_DIAG_ROB_CU2" diagramType="CustomDiagram" owner="EAPK_ROB_CU2" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU2"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU2_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU2_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=250;Top=290;Right=390;Bottom=380;" subject="EAID_ROB_CU2_B2" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU2_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU2_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU2_E1" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=240;Right=1010;Bottom=330;" subject="EAID_ROB_CU2_E2" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=400;Right=1010;Bottom=490;" subject="EAID_ROB_CU2_E3" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L6"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L7"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L8"/>
+        <UML:DiagramElement subject="EAID_ROB_CU2_L9"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+    <UML:Diagram name="Robustez CU3 - Cotizacion Asistida por IA" xmi.id="EAID_DIAG_ROB_CU3" diagramType="CustomDiagram" owner="EAPK_ROB_CU3" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU3"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU3_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU3_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU3_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU3_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=400;Right=700;Bottom=495;" subject="EAID_ROB_CU3_C3" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU3_E1" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=240;Right=1010;Bottom=330;" subject="EAID_ROB_CU3_E2" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU3_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU3_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU3_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU3_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU3_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU3_L6"/>
+        <UML:DiagramElement subject="EAID_ROB_CU3_L7"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+    <UML:Diagram name="Robustez CU4 - Programacion de Entregas" xmi.id="EAID_DIAG_ROB_CU4" diagramType="CustomDiagram" owner="EAPK_ROB_CU4" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU4"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU4_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU4_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU4_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU4_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU4_E1" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=240;Right=1010;Bottom=330;" subject="EAID_ROB_CU4_E2" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU4_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU4_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU4_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU4_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU4_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU4_L6"/>
+        <UML:DiagramElement subject="EAID_ROB_CU4_L7"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+    <UML:Diagram name="Robustez CU5 - Facturacion y Recibos PDF" xmi.id="EAID_DIAG_ROB_CU5" diagramType="CustomDiagram" owner="EAPK_ROB_CU5" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU5"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU5_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU5_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU5_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU5_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=400;Right=700;Bottom=495;" subject="EAID_ROB_CU5_C3" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU5_E1" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU5_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU5_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU5_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU5_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU5_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU5_L6"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+    <UML:Diagram name="Robustez CU6 - Pagos en Linea" xmi.id="EAID_DIAG_ROB_CU6" diagramType="CustomDiagram" owner="EAPK_ROB_CU6" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU6"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU6_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU6_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU6_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU6_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU6_E1" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=240;Right=1010;Bottom=330;" subject="EAID_ROB_CU6_E2" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=400;Right=1010;Bottom=490;" subject="EAID_ROB_CU6_E3" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU6_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU6_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU6_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU6_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU6_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU6_L6"/>
+        <UML:DiagramElement subject="EAID_ROB_CU6_L7"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+    <UML:Diagram name="Robustez CU7 - Reportes en Lenguaje Natural e IA Local" xmi.id="EAID_DIAG_ROB_CU7" diagramType="CustomDiagram" owner="EAPK_ROB_CU7" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU7"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU7_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU7_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU7_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU7_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=400;Right=700;Bottom=495;" subject="EAID_ROB_CU7_C3" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU7_E1" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L6"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L7"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L8"/>
+        <UML:DiagramElement subject="EAID_ROB_CU7_L9"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+    <UML:Diagram name="Robustez CU8 (Opcional) - Marketplace y Compra Directa" xmi.id="EAID_DIAG_ROB_CU8" diagramType="CustomDiagram" owner="EAPK_ROB_CU8" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue><UML:TaggedValue tag="package" value="EAPK_ROB_CU8"/><UML:TaggedValue tag="type" value="Analysis"/><UML:TaggedValue tag="ea_type" value="Analysis"/></UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=50;Top=180;Right=110;Bottom=290;" subject="EAID_ROB_CU8_ACT" seqno="1"/>
+        <UML:DiagramElement geometry="Left=250;Top=120;Right=390;Bottom=210;" subject="EAID_ROB_CU8_B1" seqno="2"/>
+        <UML:DiagramElement geometry="Left=250;Top=290;Right=390;Bottom=380;" subject="EAID_ROB_CU8_B2" seqno="2"/>
+        <UML:DiagramElement geometry="Left=540;Top=80;Right=700;Bottom=175;" subject="EAID_ROB_CU8_C1" seqno="3"/>
+        <UML:DiagramElement geometry="Left=540;Top=240;Right=700;Bottom=335;" subject="EAID_ROB_CU8_C2" seqno="3"/>
+        <UML:DiagramElement geometry="Left=860;Top=80;Right=1010;Bottom=170;" subject="EAID_ROB_CU8_E1" seqno="4"/>
+        <UML:DiagramElement geometry="Left=860;Top=240;Right=1010;Bottom=330;" subject="EAID_ROB_CU8_E2" seqno="4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU8_L1"/>
+        <UML:DiagramElement subject="EAID_ROB_CU8_L2"/>
+        <UML:DiagramElement subject="EAID_ROB_CU8_L3"/>
+        <UML:DiagramElement subject="EAID_ROB_CU8_L4"/>
+        <UML:DiagramElement subject="EAID_ROB_CU8_L5"/>
+        <UML:DiagramElement subject="EAID_ROB_CU8_L6"/>
+        <UML:DiagramElement subject="EAID_ROB_CU8_L7"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+  </XMI.content>
+  <XMI.extensions xmi.extender="Enterprise Architect 2.5"/>
+</XMI>

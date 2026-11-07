@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMI xmi.version="1.1" xmlns:UML="omg.org/UML1.3" timestamp="2026-11-04 19:40:00">
+  <XMI.header>
+    <XMI.documentation>
+      <XMI.exporter>Enterprise Architect</XMI.exporter>
+      <XMI.exporterVersion>2.5</XMI.exporterVersion>
+    </XMI.documentation>
+  </XMI.header>
+  <XMI.content>
+    <UML:Model name="EA_Model" xmi.id="MX_EAID_MODEL_ROOT">
+      <UML:Namespace.ownedElement>
+        <UML:Class name="EARootClass" xmi.id="EAID_11111111_5487_4080_A7F4_41526CB0AA00" isRoot="true" isLeaf="false" isAbstract="false"/>
+
+        <UML:Package name="3.1. Modelo de Dominio" xmi.id="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" visibility="public">
+          <UML:ModelElement.taggedValue>
+            <UML:TaggedValue tag="created" value="2026-11-04 19:20:00"/>
+            <UML:TaggedValue tag="modified" value="2026-11-04 19:40:00"/>
+            <UML:TaggedValue tag="iscontrolled" value="FALSE"/>
+            <UML:TaggedValue tag="version" value="1.0"/>
+            <UML:TaggedValue tag="documentation" value="Modelo de Dominio General bajo metodologia ICONIX. Abarca los 7 Casos de Uso principales (CU1 a CU7) y deja listas las entidades de Marketplace (CU8)."/>
+          </UML:ModelElement.taggedValue>
+          <UML:Namespace.ownedElement>
+
+            <UML:Class name="Cliente" xmi.id="EAID_DOM_CLIENTE" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Persona o empresa que solicita cotizaciones a medida, realiza pedidos y efectua pagos en linea (CU1, CU2, CU3, CU6)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Long"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="nombre" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="email" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="telefono" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="direccion" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="segmentoActual" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="SegmentoCliente" xmi.id="EAID_DOM_SEGMENTO" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Agrupacion o cluster descubierto por el algoritmo X-Means/K-Means segun metricas RFM: Recencia, Frecuencia y Monto (CU1)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="clusterId" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="etiqueta" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="gastoPromedioBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="pedidosPromedio" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Double"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="recenciaDias" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="Cotizacion" xmi.id="EAID_DOM_COTIZACION" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Solicitud de presupuesto de muebles a medida con foto en AWS S3, estimacion IA y flujo de negociacion/contraoferta (CU3)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="estado" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="EstadoCotizacion"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fotoReferenciaUrl" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="montoTotal" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="montoFinalFormal" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="contraofertaCliente" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fechaCreacion" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="DateTime"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="ItemCotizacion" xmi.id="EAID_DOM_ITEM_COT" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Detalle individual de un mueble solicitado dentro de una cotizacion (tipo de madera, medidas y cantidad) (CU3)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="descripcion" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="tipoMueble" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="TipoMueble"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="tipoMadera" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="TipoMadera"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="dimensiones" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="cantidad" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="precioUnitario" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="EstimacionIA" xmi.id="EAID_DOM_ESTIMACION_IA" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Resultado del calculo predictivo de precio y tiempo de fabricacion generado por el modelo ONNX / Vision / IA Local (CU3)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="precioSugeridoBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="diasEstimados" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="nivelConfianza" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Double"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="factorMadera" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Double"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="Pedido" xmi.id="EAID_DOM_PEDIDO" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Orden de trabajo formal en el taller de carpinteria, originada por una cotizacion pagada o compra directa (CU2)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Long"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="descripcion" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="estado" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="EstadoPedido"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="precioTotalBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fechaEntregaComprometida" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="LocalDate"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="modalidadEntrega" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="ModalidadEntrega"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="ItemPedido" xmi.id="EAID_DOM_ITEM_PED" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Linea de fabricacion dentro de un pedido aprobado (CU2)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Long"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="descripcion" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="tipoMueble" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="TipoMueble"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="tipoMadera" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="TipoMadera"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="cantidad" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="precioUnitario" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="PasoProduccion" xmi.id="EAID_DOM_PASO_PROD" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Etapa secuencial de fabricacion en el taller: Corte, Ensamblado, Lijado, Barnizado y Control de Calidad (CU2)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Long"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="nombrePaso" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="secuencia" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="estado" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="EstadoPaso"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fechaInicio" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="DateTime"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fechaFin" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="DateTime"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="Carpintero" xmi.id="EAID_DOM_CARPINTERO" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Maestro ebanista o artesano del taller responsable de fabricar pedidos y publicar muebles en el Marketplace (CU2, CU8)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Long"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="nombre" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="email" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="especialidad" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="aniosExperiencia" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="tarifaHoraBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="activo" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Boolean"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="Entrega" xmi.id="EAID_DOM_ENTREGA" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Despacho logistico programado con validacion de capacidad diaria y coordenadas GPS de destino (CU4)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Long"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fechaProgramada" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="LocalDate"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="franjaHoraria" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="FranjaHoraria"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="direccionDestino" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="latitud" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Double"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="longitud" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Double"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="estado" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="EstadoEntrega"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="Pago" xmi.id="EAID_DOM_PAGO" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Transaccion de cobro en linea con tarjeta y registro de auditoria inmutable en AWS DynamoDB (CU6)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="idTransaccion" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="montoBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="ultimos4DigitosTarjeta" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="estado" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="EstadoPago"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fechaPago" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="DateTime"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="FacturaRecibo" xmi.id="EAID_DOM_FACTURA" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Comprobante fiscal y recibo en PDF generado asincronamente via RabbitMQ al confirmarse un pago (CU5)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Long"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="numeroFactura" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="subtotalBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="impuestoBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="totalBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="archivoPdfUrl" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fechaEmision" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="DateTime"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="ReporteLenguajeNatural" xmi.id="EAID_DOM_REPORTE" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Consulta gerencial en espanol traducida por IA (Online u Offline Local) a SQL SELECT seguro con narrativa ejecutiva y exportacion PDF/CSV (CU7)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="consultaUsuario" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="sentenciaSqlSelect" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="narrativaEjecutiva" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="fuenteMotorIA" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <UML:Class name="MuebleMarketplace" xmi.id="EAID_DOM_MARKETPLACE" visibility="public" namespace="EAPK_DOM_0001" isRoot="false" isLeaf="false" isAbstract="false" isActive="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="documentation" value="Mueble terminado o de catalogo publicado con stock, precio fijo y foto en AWS S3 disponible para compra inmediata (CU8)."/>
+                <UML:TaggedValue tag="ea_stype" value="Class"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Classifier.feature>
+                <UML:Attribute name="id" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="nombre" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="categoria" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="tipoMadera" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="dimensiones" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="precioBs" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="BigDecimal"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="stockDisponible" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="Integer"/></UML:ModelElement.taggedValue></UML:Attribute>
+                <UML:Attribute name="imagenUrlS3" changeable="none" visibility="private" ownerScope="instance"><UML:ModelElement.taggedValue><UML:TaggedValue tag="type" value="String"/></UML:ModelElement.taggedValue></UML:Attribute>
+              </UML:Classifier.feature>
+            </UML:Class>
+
+            <!-- ASOCIACIONES CON ETIQUETAS NATIVAS DE ENTERPRISE ARCHITECT (ea_type + ea_end) -->
+
+            <UML:Association name="clasifica en" xmi.id="EAID_ASSOC_SEG_CLI" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="segmentoIA" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_SEGMENTO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="clientes" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_CLIENTE">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="solicita" xmi.id="EAID_ASSOC_CLI_COT" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="cliente" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_CLIENTE">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="cotizaciones" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_COTIZACION">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="contiene items" xmi.id="EAID_ASSOC_COT_ITEM" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Aggregation"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1..*" name="itemsCotizados" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_ITEM_COT">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="cotizacion" aggregation="composite" isOrdered="false" isNavigable="false" type="EAID_DOM_COTIZACION">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="es evaluada por" xmi.id="EAID_ASSOC_COT_IA" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="cotizacion" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_COTIZACION">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..1" name="estimacionIA" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_ESTIMACION_IA">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="se convierte en" xmi.id="EAID_ASSOC_COT_PED" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="0..1" name="cotizacionOrigen" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_COTIZACION">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..1" name="pedidoGenerado" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="realiza" xmi.id="EAID_ASSOC_CLI_PED" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="cliente" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_CLIENTE">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="pedidos" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="detalla" xmi.id="EAID_ASSOC_PED_ITEM" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Aggregation"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1..*" name="items" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_ITEM_PED">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="pedido" aggregation="composite" isOrdered="false" isNavigable="false" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="controla avance con" xmi.id="EAID_ASSOC_PED_PASO" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Aggregation"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1..*" name="pasosProduccion" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_PASO_PROD">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="pedido" aggregation="composite" isOrdered="false" isNavigable="false" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="es asignado a" xmi.id="EAID_ASSOC_CARP_PED" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1..*" name="carpinterosAsignados" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_CARPINTERO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="pedidosEnTaller" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="se despacha mediante" xmi.id="EAID_ASSOC_PED_ENT" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="pedido" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..1" name="entrega" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_ENTREGA">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="se cancela con" xmi.id="EAID_ASSOC_PED_PAGO" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="pedido" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="pago" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_PAGO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="dispara emision de" xmi.id="EAID_ASSOC_PAGO_FAC" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="pagoConfirmado" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_PAGO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="facturaRecibo" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_FACTURA">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="analiza metricas de" xmi.id="EAID_ASSOC_REP_PED" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="reportesIA" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_REPORTE">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="1..*" name="pedidosAnalizados" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="publica en vitrina" xmi.id="EAID_ASSOC_CARP_MKT" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="1" name="carpinteroAutor" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_CARPINTERO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="mueblesPublicados" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_MARKETPLACE">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+            <UML:Association name="genera orden directa" xmi.id="EAID_ASSOC_MKT_PED" visibility="public" isRoot="false" isLeaf="false" isAbstract="false">
+              <UML:ModelElement.taggedValue>
+                <UML:TaggedValue tag="style" value="3"/>
+                <UML:TaggedValue tag="ea_type" value="Association"/>
+                <UML:TaggedValue tag="direction" value="Source -&gt; Destination"/>
+              </UML:ModelElement.taggedValue>
+              <UML:Association.connection>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="mueblesComprados" aggregation="none" isOrdered="false" isNavigable="false" type="EAID_DOM_MARKETPLACE">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="source"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+                <UML:AssociationEnd visibility="public" multiplicity="0..*" name="ordenesDirectas" aggregation="none" isOrdered="false" isNavigable="true" type="EAID_DOM_PEDIDO">
+                  <UML:ModelElement.taggedValue><UML:TaggedValue tag="ea_end" value="target"/></UML:ModelElement.taggedValue>
+                </UML:AssociationEnd>
+              </UML:Association.connection>
+            </UML:Association>
+
+          </UML:Namespace.ownedElement>
+        </UML:Package>
+      </UML:Namespace.ownedElement>
+    </UML:Model>
+
+    <UML:Diagram name="3.1 Modelo de Dominio - Carpinteria" xmi.id="EAID_DIAG_DOM_0001" diagramType="ClassDiagram" owner="EAPK_DOM_0001" toolName="Enterprise Architect 2.5">
+      <UML:ModelElement.taggedValue>
+        <UML:TaggedValue tag="version" value="1.0"/>
+        <UML:TaggedValue tag="author" value="Equipo SW2"/>
+        <UML:TaggedValue tag="created_date" value="2026-11-04 19:20:00"/>
+        <UML:TaggedValue tag="modified_date" value="2026-11-04 19:40:00"/>
+        <UML:TaggedValue tag="package" value="EAPK_DOM_0001"/>
+        <UML:TaggedValue tag="type" value="Logical"/>
+      </UML:ModelElement.taggedValue>
+      <UML:Diagram.element>
+        <UML:DiagramElement geometry="Left=40;Top=40;Right=250;Bottom=170;" subject="EAID_DOM_SEGMENTO" seqno="1"/>
+        <UML:DiagramElement geometry="Left=320;Top=40;Right=520;Bottom=185;" subject="EAID_DOM_CLIENTE" seqno="2"/>
+        <UML:DiagramElement geometry="Left=600;Top=40;Right=830;Bottom=200;" subject="EAID_DOM_COTIZACION" seqno="3"/>
+        <UML:DiagramElement geometry="Left=910;Top=40;Right=1120;Bottom=185;" subject="EAID_DOM_ITEM_COT" seqno="4"/>
+        <UML:DiagramElement geometry="Left=910;Top=220;Right=1120;Bottom=345;" subject="EAID_DOM_ESTIMACION_IA" seqno="5"/>
+        <UML:DiagramElement geometry="Left=40;Top=260;Right=250;Bottom=415;" subject="EAID_DOM_CARPINTERO" seqno="6"/>
+        <UML:DiagramElement geometry="Left=40;Top=470;Right=250;Bottom=635;" subject="EAID_DOM_MARKETPLACE" seqno="7"/>
+        <UML:DiagramElement geometry="Left=430;Top=270;Right=670;Bottom=425;" subject="EAID_DOM_PEDIDO" seqno="8"/>
+        <UML:DiagramElement geometry="Left=750;Top=380;Right=960;Bottom=525;" subject="EAID_DOM_ITEM_PED" seqno="9"/>
+        <UML:DiagramElement geometry="Left=750;Top=555;Right=960;Bottom=700;" subject="EAID_DOM_PASO_PROD" seqno="10"/>
+        <UML:DiagramElement geometry="Left=310;Top=490;Right=540;Bottom=620;" subject="EAID_DOM_REPORTE" seqno="11"/>
+        <UML:DiagramElement geometry="Left=580;Top=490;Right=730;Bottom=645;" subject="EAID_DOM_ENTREGA" seqno="12"/>
+        <UML:DiagramElement geometry="Left=310;Top=660;Right=540;Bottom=795;" subject="EAID_DOM_PAGO" seqno="13"/>
+        <UML:DiagramElement geometry="Left=610;Top=660;Right=840;Bottom=815;" subject="EAID_DOM_FACTURA" seqno="14"/>
+        <UML:DiagramElement subject="EAID_ASSOC_SEG_CLI"/>
+        <UML:DiagramElement subject="EAID_ASSOC_CLI_COT"/>
+        <UML:DiagramElement subject="EAID_ASSOC_COT_ITEM"/>
+        <UML:DiagramElement subject="EAID_ASSOC_COT_IA"/>
+        <UML:DiagramElement subject="EAID_ASSOC_COT_PED"/>
+        <UML:DiagramElement subject="EAID_ASSOC_CLI_PED"/>
+        <UML:DiagramElement subject="EAID_ASSOC_PED_ITEM"/>
+        <UML:DiagramElement subject="EAID_ASSOC_PED_PASO"/>
+        <UML:DiagramElement subject="EAID_ASSOC_CARP_PED"/>
+        <UML:DiagramElement subject="EAID_ASSOC_PED_ENT"/>
+        <UML:DiagramElement subject="EAID_ASSOC_PED_PAGO"/>
+        <UML:DiagramElement subject="EAID_ASSOC_PAGO_FAC"/>
+        <UML:DiagramElement subject="EAID_ASSOC_REP_PED"/>
+        <UML:DiagramElement subject="EAID_ASSOC_CARP_MKT"/>
+        <UML:DiagramElement subject="EAID_ASSOC_MKT_PED"/>
+      </UML:Diagram.element>
+    </UML:Diagram>
+  </XMI.content>
+  <XMI.extensions xmi.extender="Enterprise Architect 2.5"/>
+</XMI>

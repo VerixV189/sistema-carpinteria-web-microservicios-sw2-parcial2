@@ -26,6 +26,13 @@ export async function loadAdminApp() {
   }
   const manifest = await res!.json();
   const expose = manifest.exposes.find((e: { key: string }) => e.key === './lifecycles');
+  if (typeof document !== 'undefined' && !document.getElementById('admin-mfe-styles')) {
+    const link = document.createElement('link');
+    link.id = 'admin-mfe-styles';
+    link.rel = 'stylesheet';
+    link.href = `${base}/styles.css`;
+    document.head.appendChild(link);
+  }
   return import(/* @vite-ignore */ `${base}/${expose.outFileName}`);
 }
 
