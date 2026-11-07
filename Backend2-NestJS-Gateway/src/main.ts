@@ -35,6 +35,8 @@ async function bootstrap() {
       '/api/payments',
       '/api/products',
       '/api/uploads',
+      '/api/sendText',
+      '/api/sendFile',
       '/graphql',
     ],
     json({ limit: '15mb' }),
