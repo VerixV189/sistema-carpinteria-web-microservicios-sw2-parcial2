@@ -23,11 +23,16 @@ class PdfReceiptService
         $path = sprintf('receipts/%s-%s.pdf', $invoice->series, $invoice->number);
         $binary = $pdf->output();
 
-        try {
-            Storage::disk('s3')->put($path, $binary, ['ContentType' => 'application/pdf']);
-        } catch (\Throwable $e) {
-            Log::warning('MinIO/S3 no disponible, guardando PDF local: '.$e->getMessage());
-            Storage::disk('local')->put($path, $binary);
+        // Siempre guardar copia en disco local para descarga rápida y resiliente
+        Storage::disk('local')->put($path, $binary);
+
+        // Si el bucket S3 / MinIO está configurado en .env, subir también al bucket S3
+        if (config('filesystems.disks.s3.bucket')) {
+            try {
+                Storage::disk('s3')->put($path, $binary, ['ContentType' => 'application/pdf']);
+            } catch (\Throwable $e) {
+                Log::warning('MinIO/S3 no disponible, usando copia local del PDF: '.$e->getMessage());
+            }
         }
 
         $invoice->update(['pdf_path' => $path]);

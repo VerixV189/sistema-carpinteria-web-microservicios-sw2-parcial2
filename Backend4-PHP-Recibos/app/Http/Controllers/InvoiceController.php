@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Services\InvoiceService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -49,16 +50,33 @@ class InvoiceController extends Controller
 
     public function download(Invoice $invoice)
     {
-        if (! $invoice->pdf_path) {
-            return response()->json(['error' => 'PDF aún no generado'], 404);
+        $content = null;
+
+        if ($invoice->pdf_path && config('filesystems.disks.s3.bucket')) {
+            try {
+                if (Storage::disk('s3')->exists($invoice->pdf_path)) {
+                    $content = Storage::disk('s3')->get($invoice->pdf_path);
+                }
+            } catch (\Throwable) {
+                $content = null;
+            }
         }
 
-        $disk = Storage::disk('s3')->exists($invoice->pdf_path) ? 's3' : 'local';
-        $content = Storage::disk($disk)->get($invoice->pdf_path);
+        if (! $content && $invoice->pdf_path && Storage::disk('local')->exists($invoice->pdf_path)) {
+            $content = Storage::disk('local')->get($invoice->pdf_path);
+        }
+
+        // Si el archivo no existe en disco o S3 no está configurado, se genera en memoria con DomPDF
+        if (! $content) {
+            $invoice->loadMissing('items');
+            $content = Pdf::loadView('receipts.invoice', ['invoice' => $invoice])
+                ->setPaper('letter')
+                ->output();
+        }
 
         return response($content, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$invoice->number.'.pdf"',
+            'Content-Disposition' => 'inline; filename="'.$invoice->series.'-'.$invoice->number.'.pdf"',
         ]);
     }
 }
