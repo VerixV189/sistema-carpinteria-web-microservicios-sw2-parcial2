@@ -47,7 +47,7 @@ export default function PaymentPage() {
     }
   };
 
-  const aprobado = result?.status === 'APPROVED';
+  const aprobado = result?.status === 'COMPLETED' || result?.status === 'APPROVED';
 
   return (
     <div style={s.page}>
