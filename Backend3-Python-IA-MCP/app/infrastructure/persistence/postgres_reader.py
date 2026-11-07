@@ -41,14 +41,17 @@ class PostgresReader:
             raise ValueError("Solo se permiten consultas SELECT")
         if any(k in lowered for k in FORBIDDEN + DANGEROUS):
             raise ValueError("Consulta contiene elementos no permitidos")
-        try:
-            with psycopg.connect(settings.postgres_ro_dsn, autocommit=True) as conn:
-                with conn.cursor(row_factory=dict_row) as cur:
-                    cur.execute(sql, params or ())
-                    return [dict(r) for r in cur.fetchall()]
-        except Exception as e:
-            log.warning("Postgres read falló: %s", e)
-            raise
+        for dsn in (settings.postgres_ro_dsn, settings.postgres_dsn):
+            try:
+                with psycopg.connect(dsn, autocommit=True) as conn:
+                    conn.read_only = True
+                    with conn.cursor(row_factory=dict_row) as cur:
+                        cur.execute(sql, params or ())
+                        return [dict(r) for r in cur.fetchall()]
+            except Exception as e:
+                last_err = e
+        log.warning("Postgres read falló: %s", last_err)
+        raise last_err
 
     def safe_select(self, sql: str, params: tuple | None = None) -> list[dict]:
         try:

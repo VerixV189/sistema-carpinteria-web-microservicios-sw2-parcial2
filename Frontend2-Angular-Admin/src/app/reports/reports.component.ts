@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { AuthService } from '../auth.service';
 import { OfflineAiService, OfflineReportResult } from '../offline-ai.service';
 
 @Component({
@@ -26,7 +27,7 @@ import { OfflineAiService, OfflineReportResult } from '../offline-ai.service';
         >
           {{ isLocalMode ? '⚡ Motor IA Local (Offline SQL Activo)' : '☁️ IA Servidor + Respaldo Local' }}
         </span>
-        <button class="btn btn-ghost" (click)="useLocalEngine = !useLocalEngine">
+        <button class="btn btn-ghost" (click)="toggleEngineMode()">
           {{ isLocalMode ? 'Intentar IA Servidor' : 'Forzar IA Local (Offline)' }}
         </button>
       </div>
@@ -130,10 +131,26 @@ export class ReportsComponent {
     'Resumen de cotizaciones registradas',
   ];
 
-  constructor(private http: HttpClient, public offlineAi: OfflineAiService) {}
+  constructor(
+    private http: HttpClient,
+    private auth: AuthService,
+    public offlineAi: OfflineAiService,
+  ) {}
 
   get isLocalMode(): boolean {
     return this.offlineAi.offline() || this.useLocalEngine;
+  }
+
+  toggleEngineMode(): void {
+    if (this.isLocalMode) {
+      this.useLocalEngine = false;
+      if (this.offlineAi.isForceOffline()) {
+        this.offlineAi.toggleForceOffline();
+      }
+      this.offlineAi.markNetworkSuccess();
+    } else {
+      this.useLocalEngine = true;
+    }
   }
 
   runPreset(presetText: string): void {
@@ -158,20 +175,32 @@ export class ReportsComponent {
       return;
     }
 
-    this.http.post<OfflineReportResult>(`${environment.aiApiUrl}/ai/report`, { query: this.query })
+    const token = this.auth.token() ?? '';
+    const headers = new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
+
+    this.http.post<OfflineReportResult>(`${environment.aiApiUrl}/ai/report`, { query: this.query }, { headers })
       .subscribe({
         next: (r) => {
           this.offlineAi.markNetworkSuccess();
           if (r && r.rows && r.rows.length > 0) {
-            this.result = r;
+            this.result = {
+              ...r,
+              source: r.source === 'llm'
+                ? 'Ollama LLM (Text-to-SQL en Servidor PostgreSQL)'
+                : r.source === 'template'
+                  ? 'Servidor PostgreSQL + Narrativa IA (Ollama)'
+                  : r.source,
+            };
           } else {
             // Si el backend no devolvió filas o falló internamente, enriquecemos con el motor IA Local
             this.result = this.offlineAi.generateOfflineReport(this.query);
           }
           this.loading = false;
         },
-        error: () => {
-          this.offlineAi.markNetworkFailure();
+        error: (err) => {
+          if (!err?.status || err.status === 0) {
+            this.offlineAi.markNetworkFailure();
+          }
           try {
             this.result = this.offlineAi.generateOfflineReport(this.query);
           } catch (e) {
