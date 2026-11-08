@@ -52,10 +52,10 @@ export class HealthController {
             text: { body: String(body?.text ?? '') },
           }),
         });
-        const data = await res.json();
+        const data = (await res.json()) as Record<string, any>;
         if (res.ok) {
           this.log.log(`WhatsApp Cloud API Oficial texto enviado → ${rawPhone}`);
-          return data;
+          return { ...data, status: 'SENT', chatId: body?.chatId ?? rawPhone };
         }
         this.log.warn(`WhatsApp Cloud API respuesta (${res.status}): ${JSON.stringify(data)}`);
       } catch (e) {
@@ -100,48 +100,77 @@ export class HealthController {
     const filename = body?.file?.filename ?? 'recibo.pdf';
 
     // 1. API Oficial de WhatsApp Cloud (Meta Graph API: subir media + enviar documento)
-    if (cloudToken && phoneId && rawPhone && body?.file?.data) {
+    if (cloudToken && phoneId && rawPhone) {
       try {
-        const binary = Buffer.from(String(body.file.data), 'base64');
-        const form = new FormData();
-        form.append('messaging_product', 'whatsapp');
-        form.append(
-          'file',
-          new Blob([binary], { type: body?.file?.mimetype || 'application/pdf' }),
-          filename,
-        );
-
-        const uploadRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/media`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${cloudToken}` },
-          body: form,
-        });
-        const uploadData = (await uploadRes.json()) as { id?: string };
-
-        if (uploadRes.ok && uploadData?.id) {
-          const msgRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${cloudToken}`,
-            },
-            body: JSON.stringify({
-              messaging_product: 'whatsapp',
-              to: rawPhone,
-              type: 'document',
-              document: {
-                id: uploadData.id,
-                filename,
-                caption: body?.caption ?? 'Recibo PDF — Carpintería El Roble',
-              },
-            }),
+        let binary: Buffer | null = null;
+        if (body?.file?.data) {
+          binary = Buffer.from(String(body.file.data), 'base64');
+        } else {
+          // Si n8n solo envía el filename (ej. recibo-A-45.pdf), obtenemos el PDF directo de billing-service
+          const billingUrl = this.config.get<string>('BILLING_SERVICE_URL', 'http://127.0.0.1:8001');
+          const secret = this.config.get<string>('INTERNAL_SECRET', 'carpinteria-internal-dev');
+          const numMatch = String(filename).match(/(\d+)\.pdf$/i);
+          const listRes = await fetch(`${billingUrl}/api/invoices`, {
+            headers: { 'x-internal-secret': secret },
           });
-          const msgData = await msgRes.json();
-          if (msgRes.ok) {
-            this.log.log(`WhatsApp Cloud API Oficial PDF enviado → ${rawPhone} (${filename})`);
-            return msgData;
+          if (listRes.ok) {
+            const listJson = (await listRes.json()) as { data?: Array<{ id: number; number: number }> };
+            const invoices = listJson?.data ?? [];
+            const target = numMatch
+              ? invoices.find((inv) => String(inv.number) === numMatch[1] || String(inv.id) === numMatch[1])
+              : invoices[0];
+            if (target?.id) {
+              const pdfRes = await fetch(`${billingUrl}/api/invoices/${target.id}/download`, {
+                headers: { 'x-internal-secret': secret },
+              });
+              if (pdfRes.ok) {
+                binary = Buffer.from(await pdfRes.arrayBuffer());
+              }
+            }
           }
-          this.log.warn(`WhatsApp Cloud API documento (${msgRes.status}): ${JSON.stringify(msgData)}`);
+        }
+
+        if (binary) {
+          const form = new FormData();
+          form.append('messaging_product', 'whatsapp');
+          form.append(
+            'file',
+            new Blob([binary], { type: body?.file?.mimetype || 'application/pdf' }),
+            filename,
+          );
+
+          const uploadRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/media`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${cloudToken}` },
+            body: form,
+          });
+          const uploadData = (await uploadRes.json()) as { id?: string };
+
+          if (uploadRes.ok && uploadData?.id) {
+            const msgRes = await fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${cloudToken}`,
+              },
+              body: JSON.stringify({
+                messaging_product: 'whatsapp',
+                to: rawPhone,
+                type: 'document',
+                document: {
+                  id: uploadData.id,
+                  filename,
+                  caption: body?.caption ?? 'Recibo PDF — Carpintería El Roble',
+                },
+              }),
+            });
+            const msgData = (await msgRes.json()) as Record<string, any>;
+            if (msgRes.ok) {
+              this.log.log(`WhatsApp Cloud API Oficial PDF enviado → ${rawPhone} (${filename})`);
+              return { ...msgData, status: 'SENT', chatId: body?.chatId ?? rawPhone, filename };
+            }
+            this.log.warn(`WhatsApp Cloud API documento (${msgRes.status}): ${JSON.stringify(msgData)}`);
+          }
         }
       } catch (e) {
         this.log.warn(`Error enviando PDF por WhatsApp Cloud API Oficial: ${e}`);

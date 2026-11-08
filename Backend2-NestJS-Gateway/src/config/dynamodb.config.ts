@@ -9,12 +9,32 @@ export class DynamodbConfig {
   readonly doc: DynamoDBDocumentClient;
 
   constructor(config: ConfigService) {
+    const accessKeyId = config.get<string>('AWS_ACCESS_KEY_ID', 'local');
+    const secretAccessKey = config.get<string>('AWS_SECRET_ACCESS_KEY', 'local');
+    const region =
+      config.get<string>('AWS_REGION') ||
+      config.get<string>('AWS_S3_REGION') ||
+      config.get<string>('AWS_DEFAULT_REGION') ||
+      'us-east-2';
+    const rawEndpoint = config.get<string>('DYNAMODB_ENDPOINT');
+    const isRealAws =
+      Boolean(accessKeyId && secretAccessKey) &&
+      accessKeyId !== 'local' &&
+      !accessKeyId.startsWith('PEGA_AQUI');
+
+    // Si hay credenciales reales de AWS IAM, conectamos a AWS DynamoDB real en la nube
+    // (ignorando localhost:8000 del .env.example).
+    const endpoint =
+      isRealAws && (!rawEndpoint || rawEndpoint.includes('localhost') || rawEndpoint.includes('127.0.0.1') || rawEndpoint.includes('dynamodb:'))
+        ? undefined
+        : rawEndpoint || 'http://localhost:8000';
+
     this.raw = new DynamoDBClient({
-      endpoint: config.get<string>('DYNAMODB_ENDPOINT', 'http://localhost:8000'),
-      region: config.get<string>('AWS_REGION', 'us-east-1'),
+      ...(endpoint ? { endpoint } : {}),
+      region,
       credentials: {
-        accessKeyId: config.get<string>('AWS_ACCESS_KEY_ID', 'local'),
-        secretAccessKey: config.get<string>('AWS_SECRET_ACCESS_KEY', 'local'),
+        accessKeyId,
+        secretAccessKey,
       },
     });
     this.doc = DynamoDBDocumentClient.from(this.raw);

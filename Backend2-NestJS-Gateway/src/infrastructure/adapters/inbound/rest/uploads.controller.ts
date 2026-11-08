@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ConfigService } from '@nestjs/config';
 import { createHash, createHmac } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -37,20 +38,30 @@ export class UploadsController {
   private readonly log = new Logger(UploadsController.name);
   private readonly localDir = path.resolve(process.cwd(), 'uploads');
 
+  constructor(private readonly config: ConfigService) {}
+
   private getS3Config() {
     const bucket =
+      this.config.get<string>('AWS_S3_BUCKET') ||
+      this.config.get<string>('S3_BUCKET') ||
+      this.config.get<string>('AWS_BUCKET') ||
+      this.config.get<string>('MINIO_BUCKET_PHOTOS') ||
       process.env.AWS_S3_BUCKET ||
-      process.env.S3_BUCKET ||
-      process.env.AWS_BUCKET ||
-      process.env.MINIO_BUCKET_PHOTOS ||
       'nestjs-archivos-proyecto-erik-2026';
     const region =
+      this.config.get<string>('AWS_S3_REGION') ||
+      this.config.get<string>('AWS_REGION') ||
+      this.config.get<string>('AWS_DEFAULT_REGION') ||
       process.env.AWS_S3_REGION ||
-      process.env.S3_REGION ||
-      process.env.AWS_DEFAULT_REGION ||
       'us-east-2';
-    const accessKey = process.env.AWS_ACCESS_KEY_ID || '';
-    const secretKey = process.env.AWS_SECRET_ACCESS_KEY || '';
+    const accessKey =
+      this.config.get<string>('AWS_ACCESS_KEY_ID') ||
+      process.env.AWS_ACCESS_KEY_ID ||
+      '';
+    const secretKey =
+      this.config.get<string>('AWS_SECRET_ACCESS_KEY') ||
+      process.env.AWS_SECRET_ACCESS_KEY ||
+      '';
     const enabled =
       Boolean(bucket && accessKey && secretKey) &&
       accessKey !== 'local' &&
