@@ -31,6 +31,24 @@ class InvoiceService
     private function issueOnce(array $data, array $items): Invoice
     {
         return DB::transaction(function () use ($data, $items) {
+            try {
+                DB::statement('LOCK TABLE invoices IN SHARE ROW EXCLUSIVE MODE');
+            } catch (\Throwable) {
+                // En caso de SQLite en tests unitarios, ignorar el LOCK TABLE de PostgreSQL
+            }
+
+            // Idempotencia por payment_id: evita duplicar el recibo cuando tanto
+            // el consumidor RabbitMQ como el webhook de n8n procesan el mismo pago.
+            if (! empty($data['payment_id'])) {
+                $existing = Invoice::with('items')
+                    ->where('payment_id', $data['payment_id'])
+                    ->first();
+                if ($existing) {
+                    Log::info("Factura existente #{$existing->number} reutilizada para payment_id {$data['payment_id']}");
+                    return $existing;
+                }
+            }
+
             $subtotal = collect($items)->sum(fn ($i) => $i['quantity'] * $i['unit_price']);
             $tax = round($subtotal * self::TAX_RATE, 2);
 

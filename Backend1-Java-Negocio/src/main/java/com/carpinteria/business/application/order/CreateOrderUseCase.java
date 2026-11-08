@@ -25,7 +25,13 @@ public class CreateOrderUseCase {
         this.events = events;
     }
 
-    public OrderResponse execute(CreateOrderCommand command) {
+    public synchronized OrderResponse execute(CreateOrderCommand command) {
+        if (command.quotationId() != null && !command.quotationId().isBlank()) {
+            var existing = repository.findByQuotationId(command.quotationId().trim());
+            if (existing.isPresent()) {
+                return OrderResponse.from(existing.get());
+            }
+        }
         List<OrderItem> items = command.items() == null ? List.of() : command.items().stream()
                 .map(i -> new OrderItem(
                         null,
