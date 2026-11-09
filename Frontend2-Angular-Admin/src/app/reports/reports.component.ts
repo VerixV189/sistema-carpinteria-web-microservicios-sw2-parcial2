@@ -13,7 +13,7 @@ import { OfflineAiService, OfflineReportResult } from '../offline-ai.service';
   template: `
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px">
       <div>
-        <h2 style="margin:0">Reportes en Lenguaje Natural (CU7)</h2>
+        <h2 style="margin:0">Reportes Ejecutivos e Inteligencia de Negocio</h2>
         <p style="margin:4px 0 0;font-size:13px;color:#6b5e52">
           Genera reportes ejecutivos con consultas SQL seguras tanto Online como 100% Offline con IA Local.
         </p>

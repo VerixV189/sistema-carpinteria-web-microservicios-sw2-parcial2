@@ -806,7 +806,7 @@ export class OfflineAiService {
   <div class="header">
     <div>
       <div class="brand">CARPINTERÍA ARTESANAL "EL ROBLE"</div>
-      <div style="font-size:13px;color:#6b7280">Reporte Ejecutivo de Inteligencia de Negocio (CU7)</div>
+      <div style="font-size:13px;color:#6b7280">Reporte Ejecutivo de Inteligencia de Negocio</div>
     </div>
     <div class="badge">${report.source}</div>
   </div>

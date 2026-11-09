@@ -557,7 +557,7 @@ export default function CatalogPage() {
                 <hr style={{ border: 'none', borderTop: '1px solid #EDE4D8', margin: '10px 0' }} />
 
                 <div style={s.fieldGroup}>
-                  <label style={s.label}>Tarjeta de pago (Pasarela CU6)</label>
+                  <label style={s.label}>Tarjeta de débito o crédito</label>
                   <input
                     type="text"
                     required

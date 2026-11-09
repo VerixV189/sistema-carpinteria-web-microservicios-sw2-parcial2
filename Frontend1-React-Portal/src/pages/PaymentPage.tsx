@@ -82,7 +82,7 @@ export default function PaymentPage() {
               <input value={cardNumber} onChange={(e) => setCardNumber(formatCard(e.target.value))}
                 style={s.input} inputMode="numeric" placeholder="1234 5678 9012 3456" />
             </label>
-            <p style={s.hint}>Para esta demostración: una tarjeta que empieza con 4242 aprueba, otra rechaza.</p>
+            <p style={s.hint}>Aceptamos tarjetas de débito y crédito Visa y Mastercard.</p>
 
             <label style={s.label}>
               Nombre en la tarjeta

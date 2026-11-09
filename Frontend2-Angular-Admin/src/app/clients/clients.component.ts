@@ -17,11 +17,11 @@ const SEGMENTS = ['REGULAR', 'VIP', 'WHOLESALE'];
   imports: [CommonModule, ReactiveFormsModule, FormsModule, ActionsMenuComponent],
   template: `
     <div class="toolbar">
-      <h2 class="sec" style="margin:0">Clientes y Segmentación IA (CU1)</h2>
+      <h2 class="sec" style="margin:0">Clientes y Segmentación IA</h2>
       <div class="grow"></div>
       <input [(ngModel)]="search" placeholder="Buscar nombre o email…" style="width:230px" />
       <button class="btn btn-ghost" (click)="runClustering()" [disabled]="clustering">
-        {{ clustering ? 'Segmentando con IA…' : 'Segmentar con IA (X-Means)' }}
+        {{ clustering ? 'Segmentando con IA…' : 'Segmentar Cartera con IA' }}
       </button>
       <button class="btn" (click)="openForm()">+ Nuevo cliente</button>
     </div>

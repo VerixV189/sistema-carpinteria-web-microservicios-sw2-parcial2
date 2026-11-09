@@ -18,6 +18,11 @@ function decodeRole(token: string): Session['role'] {
 }
 
 export function saveSession(token: string, email: string): Session {
+  const prev = getSession();
+  if (prev && prev.email.toLowerCase() !== email.toLowerCase()) {
+    localStorage.removeItem('carpinteria_cart');
+    window.dispatchEvent(new CustomEvent('carpinteria_cart_change'));
+  }
   const session: Session = { token, email, role: decodeRole(token) };
   localStorage.setItem(KEY, JSON.stringify(session));
   return session;
@@ -41,6 +46,8 @@ export function getSession(): Session | null {
 
 export function clearSession() {
   localStorage.removeItem(KEY);
+  localStorage.removeItem('carpinteria_cart');
+  window.dispatchEvent(new CustomEvent('carpinteria_cart_change'));
 }
 
 /** Destino post-login según rol. */

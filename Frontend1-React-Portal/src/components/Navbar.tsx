@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearSession, getSession } from '../auth';
-import { cartCount, subscribeCart } from '../cart';
+import { cartCount, clearCart, subscribeCart } from '../cart';
 import { Icon, Icons } from '../icons';
 import { isForceOffline, isOffline, setForceOffline, subscribeOffline } from '../offline';
 
@@ -52,6 +52,7 @@ export default function Navbar() {
   };
 
   const logout = () => {
+    clearCart();
     clearSession();
     navigate('/login');
   };
@@ -94,7 +95,7 @@ export default function Navbar() {
             }} />
             <span>{offline ? 'Offline · IA Local' : 'Online'}</span>
           </button>
-          {itemsInCart > 0 && (
+          {session && itemsInCart > 0 && (
             <Link to="/productos?cart=1" style={styles.cartBtn} title="Ver carrito de compras">
               <Icon name="package" size={14} />
               <span>Carrito ({itemsInCart})</span>
