@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../api';
 import { getSession } from '../auth';
 import { Icon } from '../icons';
@@ -15,6 +16,7 @@ const PREGUNTAS = [
 
 /** Asistente IA del portal — panel acoplado a la derecha con soporte IA Local Offline. */
 export default function AgentChat({ open, onToggle }: { open: boolean; onToggle: (v: boolean) => void }) {
+  const { pathname } = useLocation();
   const [msgs, setMsgs] = useState<Msg[]>([
     { role: 'agent', text: 'Hola, soy el asistente de El Roble. Funciono tanto Online como con IA Local sin internet.' },
   ]);
@@ -51,7 +53,7 @@ export default function AgentChat({ open, onToggle }: { open: boolean; onToggle:
     }
   };
 
-  if (!getSession()) return null;
+  if (!getSession() || pathname.startsWith('/admin') || pathname.startsWith('/taller')) return null;
 
   const localActive = offline || useLocalAiOnly;
 

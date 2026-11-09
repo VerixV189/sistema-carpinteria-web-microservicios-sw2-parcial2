@@ -19,16 +19,18 @@ import { OfflineAiService } from './offline-ai.service';
         <aside class="side">
           <div class="brand"><span class="logo">ER</span><h3>Panel Admin</h3></div>
 
-          <button
-            type="button"
-            class="net-pill"
-            [class.net-offline]="offlineAi.offline()"
-            (click)="offlineAi.toggleForceOffline()"
-            title="Haz clic para cambiar entre Modo Online y Modo Offline + IA Local"
-          >
-            <span class="dot"></span>
-            <span>{{ offlineAi.offline() ? 'Offline · IA Local' : 'Online · Sincronizado' }}</span>
-          </button>
+          @if (isStandalone()) {
+            <button
+              type="button"
+              class="net-pill"
+              [class.net-offline]="offlineAi.offline()"
+              (click)="offlineAi.toggleForceOffline()"
+              title="Haz clic para cambiar entre Modo Online y Modo Offline + IA Local"
+            >
+              <span class="dot"></span>
+              <span>{{ offlineAi.offline() ? 'Offline · IA Local' : 'Online · Sincronizado' }}</span>
+            </button>
+          }
 
           <a routerLink="/dashboard" routerLinkActive="active">
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
@@ -65,16 +67,18 @@ import { OfflineAiService } from './offline-ai.service';
             <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
             Reportes IA
           </a>
-          <div class="foot">
-            <span class="who">{{ email() }}</span>
-            <button class="out" (click)="logout()">
-              <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-              Salir
-            </button>
-          </div>
+          @if (isStandalone()) {
+            <div class="foot">
+              <span class="who">{{ email() }}</span>
+              <button class="out" (click)="logout()">
+                <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+                Salir
+              </button>
+            </div>
+          }
         </aside>
         <main class="content">
-          @if (offlineAi.offline()) {
+          @if (isStandalone() && offlineAi.offline()) {
             <div class="offline-alert">
               <div>
                 ⚡ <b>Modo Sin Internet (Offline Activo):</b> Mostrando datos locales sincronizados (Clientes, Pedidos, Carpinteros, Entregas, Marketplace) y <b>Motor IA Local</b> para Reportes SQL, Segmentación y Asistente.
@@ -146,6 +150,9 @@ export class AppComponent {
   ) {}
 
   isLogin() { return this.router.url === '/login'; }
+  isStandalone() {
+    return typeof window !== 'undefined' && (window.location.hostname.startsWith('admin.') || window.location.port === '4202');
+  }
   email() { return this.auth.session()?.email ?? ''; }
   logout() {
     this.auth.logout();

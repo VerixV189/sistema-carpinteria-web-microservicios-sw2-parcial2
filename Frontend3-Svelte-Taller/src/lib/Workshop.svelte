@@ -143,6 +143,7 @@
   let agentLoading = false;
   let offline = isOffline();
   let unsubNet: (() => void) | null = null;
+  const isStandalone = typeof window !== 'undefined' && (window.location.hostname.startsWith('taller.') || window.location.port === '4204');
 
   const PREGUNTAS = [
     '¿Qué tengo que hacer hoy?',
@@ -281,6 +282,7 @@
 {#if denied}
   <main><section class="card"><p class="big">No puedes entrar aquí. Esta zona es solo para el taller.</p></section></main>
 {:else}
+{#if isStandalone}
 <header class="topbar">
   <div class="brand"><Icon name="hammer" size={22} /><strong>Mi Taller</strong></div>
   <div class="who">
@@ -295,9 +297,10 @@
     <button class="out" on:click={salir}><Icon name="logout" size={15} /> Salir</button>
   </div>
 </header>
+{/if}
 
 <main class:con-chat={chatAbierto}>
-  {#if offline}
+  {#if isStandalone && offline}
     <p class="aviso" style="background:#fef3c7;border-color:#f59e0b;color:#78350f">
       ⚡ <b>Modo Sin Internet (Offline Activo):</b> Trabajando con pedidos y muebles guardados localmente e <b>IA Local del Taller</b>.
     </p>

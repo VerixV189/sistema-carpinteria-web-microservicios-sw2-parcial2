@@ -38,6 +38,10 @@ export default function Navbar() {
 
   useEffect(() => {
     setItemsInCart(cartCount());
+  }, [pathname, session?.email, session?.role]);
+
+  useEffect(() => {
+    setItemsInCart(cartCount());
     const unsubCart = subscribeCart(() => setItemsInCart(cartCount()));
     const unsubNet = subscribeOffline(() => setOffline(isOffline()));
     return () => {
@@ -95,7 +99,7 @@ export default function Navbar() {
             }} />
             <span>{offline ? 'Offline · IA Local' : 'Online'}</span>
           </button>
-          {session && itemsInCart > 0 && (
+          {session?.role === 'CLIENT' && itemsInCart > 0 && (
             <Link to="/productos?cart=1" style={styles.cartBtn} title="Ver carrito de compras">
               <Icon name="package" size={14} />
               <span>Carrito ({itemsInCart})</span>

@@ -1,16 +1,36 @@
 import type { MarketplaceProduct } from './api';
+import { getSession } from './auth';
 
 export interface CartItem {
   product: MarketplaceProduct;
   quantity: number;
 }
 
-const CART_KEY = 'carpinteria_cart';
+const LEGACY_CART_KEY = 'carpinteria_cart';
 const CART_EVENT = 'carpinteria_cart_change';
+
+// Limpiar clave global antigua para que nunca quede un carrito huérfano entre usuarios
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem(LEGACY_CART_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+function currentCartKey(): string | null {
+  const session = getSession();
+  if (!session || session.role !== 'CLIENT' || !session.email) {
+    return null;
+  }
+  return `carpinteria_cart_${session.email.toLowerCase()}`;
+}
 
 export function getCart(): CartItem[] {
   try {
-    const raw = localStorage.getItem(CART_KEY);
+    const key = currentCartKey();
+    if (!key) return [];
+    const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as CartItem[]) : [];
   } catch {
     return [];
@@ -18,7 +38,10 @@ export function getCart(): CartItem[] {
 }
 
 function saveCart(items: CartItem[]) {
-  localStorage.setItem(CART_KEY, JSON.stringify(items));
+  const key = currentCartKey();
+  if (key) {
+    localStorage.setItem(key, JSON.stringify(items));
+  }
   window.dispatchEvent(new CustomEvent(CART_EVENT));
 }
 
