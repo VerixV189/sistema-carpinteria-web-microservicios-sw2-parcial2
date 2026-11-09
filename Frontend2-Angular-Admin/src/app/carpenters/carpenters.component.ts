@@ -5,6 +5,7 @@ import { Apollo, QueryRef } from 'apollo-angular';
 import { CARPENTERS, CREATE_CARPENTER, UPDATE_CARPENTER, DELETE_CARPENTER, CARPENTER_WORKLOAD } from '../graphql.operations';
 import { ToastService } from '../toast.service';
 import { ConfirmService } from '../confirm.service';
+import { ApiService } from '../api.service';
 import { ActionsMenuComponent, ActionItem } from '../actions-menu.component';
 import { orderLabel, fmtDate } from '../labels';
 
@@ -63,6 +64,10 @@ const SPECIALTIES: [string, string][] = [
               </label>
               <label class="f">Años de experiencia<input formControlName="yearsExperience" type="number" min="0" /></label>
               <label class="f">Tarifa por hora (Bs.)<input formControlName="hourlyRate" type="number" min="0" step="0.5" /></label>
+              <label class="f full">
+                Contraseña de acceso al Taller {{ editing ? '(opcional — llena solo para cambiarla)' : '(por defecto: carp123)' }}
+                <input formControlName="password" type="text" placeholder="Si lo dejas vacío su contraseña será: carp123" />
+              </label>
             </div>
             <div class="modal-foot">
               <button type="button" class="btn btn-ghost" (click)="closeForm()">Cancelar</button>
@@ -111,6 +116,7 @@ export class CarpentersComponent implements OnInit {
 
   constructor(
     private apollo: Apollo, fb: FormBuilder,
+    private api: ApiService,
     private toast: ToastService, private confirm: ConfirmService,
   ) {
     this.form = fb.group({
@@ -120,6 +126,7 @@ export class CarpentersComponent implements OnInit {
       specialty: ['GENERAL'],
       yearsExperience: [0],
       hourlyRate: [0],
+      password: [''],
     });
   }
 
@@ -146,8 +153,8 @@ export class CarpentersComponent implements OnInit {
   openForm(c?: any): void {
     this.editing = c ?? null;
     this.form.reset(c
-      ? { name: c.name, email: c.email, phone: c.phone, specialty: c.specialty, yearsExperience: c.yearsExperience, hourlyRate: c.hourlyRate }
-      : { specialty: 'GENERAL', yearsExperience: 0, hourlyRate: 0 });
+      ? { name: c.name, email: c.email, phone: c.phone, specialty: c.specialty, yearsExperience: c.yearsExperience, hourlyRate: c.hourlyRate, password: '' }
+      : { specialty: 'GENERAL', yearsExperience: 0, hourlyRate: 0, password: '' });
     this.showForm = true;
   }
 
@@ -157,12 +164,13 @@ export class CarpentersComponent implements OnInit {
     if (this.form.invalid || this.saving) return;
     const ok = await this.confirm.ask({
       title: this.editing ? 'Guardar cambios' : 'Crear carpintero',
-      message: this.editing ? `Se actualizarán los datos de ${this.editing.name}.` : `Se registrará a ${this.form.value.name}.`,
+      message: this.editing ? `Se actualizarán los datos de ${this.editing.name}.` : `Se registrará a ${this.form.value.name} y se habilitará su cuenta para iniciar sesión.`,
       confirmLabel: 'Guardar',
     });
     if (!ok) return;
     this.saving = true;
     const v = this.form.value;
+    const rawPassword = (v.password ?? '').trim();
     const input: any = {
       name: v.name, email: v.email, specialty: v.specialty,
       yearsExperience: Number(v.yearsExperience) || 0,
@@ -173,7 +181,23 @@ export class CarpentersComponent implements OnInit {
       ? this.apollo.mutate({ mutation: UPDATE_CARPENTER, variables: { id: this.editing.id, input } })
       : this.apollo.mutate({ mutation: CREATE_CARPENTER, variables: { input } });
     obs.subscribe({
-      next: () => { this.toast.ok(this.editing ? 'Carpintero actualizado' : 'Carpintero registrado'); this.closeForm(); this.ref?.refetch(); this.saving = false; },
+      next: async () => {
+        await this.api.upsertUserAccount({
+          email: v.email,
+          name: v.name,
+          password: rawPassword || (this.editing ? undefined : 'carp123'),
+          role: 'CARPENTER',
+        });
+        const pwUsed = rawPassword || 'carp123';
+        this.toast.ok(
+          this.editing
+            ? `Carpintero actualizado${rawPassword ? ` (nueva clave: ${rawPassword})` : ''}`
+            : `Carpintero registrado — Usuario: ${v.email} | Clave: ${pwUsed}`,
+        );
+        this.closeForm();
+        this.ref?.refetch();
+        this.saving = false;
+      },
       error: (e) => { this.toast.fromError(e); this.saving = false; },
     });
   }

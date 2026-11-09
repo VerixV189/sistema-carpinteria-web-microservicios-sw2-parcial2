@@ -135,7 +135,7 @@ export class HealthController {
           form.append('messaging_product', 'whatsapp');
           form.append(
             'file',
-            new Blob([binary], { type: body?.file?.mimetype || 'application/pdf' }),
+            new Blob([new Uint8Array(binary)], { type: body?.file?.mimetype || 'application/pdf' }),
             filename,
           );
 

@@ -95,6 +95,10 @@ const SEGMENT_LABEL: Record<string, string> = {
                   <option *ngFor="let s of segments" [value]="s.v">{{ s.l }}</option>
                 </select>
               </label>
+              <label class="f full">
+                Contraseña de acceso {{ editing ? '(opcional — llena solo para cambiarla)' : '(por defecto: cliente123)' }}
+                <input formControlName="password" type="text" placeholder="Si lo dejas vacío su contraseña será: cliente123" />
+              </label>
             </div>
             <div class="modal-foot">
               <button type="button" class="btn btn-ghost" (click)="closeForm()">Cancelar</button>
@@ -130,6 +134,7 @@ export class ClientsComponent implements OnInit {
       phone: [''],
       address: [''],
       segment: ['REGULAR'],
+      password: [''],
     });
   }
 
@@ -180,8 +185,8 @@ export class ClientsComponent implements OnInit {
 
   openForm(c?: any): void {
     this.editing = c ?? null;
-    this.form.reset(c ? { name: c.name, email: c.email, phone: c.phone, address: c.address, segment: c.segment ?? 'REGULAR' }
-                       : { segment: 'REGULAR' });
+    this.form.reset(c ? { name: c.name, email: c.email, phone: c.phone, address: c.address, segment: c.segment ?? 'REGULAR', password: '' }
+                       : { segment: 'REGULAR', password: '' });
     this.showForm = true;
   }
 
@@ -192,17 +197,36 @@ export class ClientsComponent implements OnInit {
     const name = this.form.value.name;
     const ok = await this.confirm.ask({
       title: this.editing ? 'Guardar cambios' : 'Crear cliente',
-      message: this.editing ? `Se actualizarán los datos de ${this.editing.name}.` : `Se registrará al cliente ${name}.`,
+      message: this.editing ? `Se actualizarán los datos de ${this.editing.name}.` : `Se registrará al cliente ${name} y su cuenta de acceso.`,
       confirmLabel: 'Guardar',
     });
     if (!ok) return;
     this.saving = true;
-    const input = Object.fromEntries(Object.entries(this.form.value).filter(([, v]) => v !== '' && v !== null));
+    const rawPassword = (this.form.value.password ?? '').trim();
+    const input = Object.fromEntries(
+      Object.entries(this.form.value).filter(([k, v]) => k !== 'password' && v !== '' && v !== null),
+    );
     const obs = this.editing
       ? this.apollo.mutate({ mutation: UPDATE_CLIENT, variables: { id: this.editing.id, input } })
       : this.apollo.mutate({ mutation: CREATE_CLIENT, variables: { input } });
     obs.subscribe({
-      next: () => { this.toast.ok(this.editing ? 'Cliente actualizado' : 'Cliente registrado'); this.closeForm(); this.ref?.refetch(); this.saving = false; },
+      next: async () => {
+        await this.api.upsertUserAccount({
+          email: this.form.value.email,
+          name: this.form.value.name,
+          password: rawPassword || (this.editing ? undefined : 'cliente123'),
+          role: 'CLIENT',
+        });
+        const pwUsed = rawPassword || 'cliente123';
+        this.toast.ok(
+          this.editing
+            ? `Cliente actualizado${rawPassword ? ` (nueva clave: ${rawPassword})` : ''}`
+            : `Cliente registrado — Usuario: ${this.form.value.email} | Clave: ${pwUsed}`,
+        );
+        this.closeForm();
+        this.ref?.refetch();
+        this.saving = false;
+      },
       error: (e) => { this.toast.fromError(e); this.saving = false; },
     });
   }

@@ -34,6 +34,23 @@ export class RegisterDto {
   address?: string;
 }
 
+export class UpsertStaffDto {
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  @MinLength(2)
+  name!: string;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  role?: 'CARPENTER' | 'CLIENT' | 'ADMIN';
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
@@ -50,6 +67,13 @@ export class AuthController {
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
+  }
+
+  /** Alta o actualización de cuenta de acceso (Carpintero / Cliente) desde el panel Admin. */
+  @UseGuards(JwtAuthGuard)
+  @Post('register-user')
+  registerUser(@Body() dto: UpsertStaffDto) {
+    return this.auth.upsertUserAccount(dto);
   }
 
   @UseGuards(JwtAuthGuard)

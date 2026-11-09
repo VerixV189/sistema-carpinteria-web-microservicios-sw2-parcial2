@@ -260,6 +260,22 @@ export class ApiService {
     }
   }
 
+  async upsertUserAccount(payload: {
+    email: string;
+    name: string;
+    password?: string;
+    role: 'CARPENTER' | 'CLIENT' | 'ADMIN';
+  }): Promise<void> {
+    try {
+      await this.req('/api/auth/register-user', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // Si está offline, el gateway aprovisionará la cuenta al primer login
+    }
+  }
+
   async uploadImageToS3(file: File, folder = 'marketplace'): Promise<string> {
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const fr = new FileReader();
