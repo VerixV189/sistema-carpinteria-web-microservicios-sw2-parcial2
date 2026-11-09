@@ -31,6 +31,7 @@ import {
   MongoProductRepository,
 } from '../../outbound/persistence/mongo-product.repository';
 import { ProcessPaymentHandler } from '../../../../application/payment/commands/process-payment.handler';
+import { MarketplaceCheckoutSaga } from '../../../../application/saga/marketplace-checkout.saga';
 import { RabbitMQAdapter } from '../../outbound/messaging/rabbitmq.adapter';
 import { JwtAuthGuard } from '../../../../auth/jwt-auth.guard';
 import { Roles, RolesGuard } from '../../../../auth/roles.guard';
@@ -107,8 +108,15 @@ export class ProductController {
   constructor(
     private readonly repository: MongoProductRepository,
     private readonly processPayment: ProcessPaymentHandler,
+    private readonly checkoutSaga: MarketplaceCheckoutSaga,
     private readonly events: RabbitMQAdapter,
   ) {}
+
+  /** Historial en vivo de ejecuciones del Patrón Saga (Orquestación + Compensaciones). */
+  @Get('sagas')
+  getSagaExecutions() {
+    return this.checkoutSaga.getRecentExecutions();
+  }
 
   /** Catálogo público del Marketplace (Web y Móvil). */
   @Get()
@@ -248,13 +256,12 @@ export class ProductController {
   }
 
   /**
-   * Checkout directo del Marketplace:
-   *  1. Valida stock disponible de cada mueble.
-   *  2. Cobra con tarjeta vía ProcessPaymentHandler (guarda log en DynamoDB y
-   *     publica payment.completed → Backend4 PHP genera el Recibo PDF).
-   *  3. Descuenta el stock de los muebles comprados.
-   *  4. Publica quotation.approved con paid=true y carpenterEmail → Backend1 Java
-   *     crea el pedido en IN_PRODUCTION y lo auto-asigna al carpintero que subió el mueble.
+   * Checkout directo del Marketplace coordinado mediante el Patrón de Diseño SAGA
+   * (`MarketplaceCheckoutSaga`):
+   *  - Paso 1: Reserva stock en MongoDB (Compensación: restaura stock en MongoDB).
+   *  - Paso 2: Cobra con tarjeta vía ProcessPaymentHandler y audita en DynamoDB
+   *            (Compensación: registra SAGA_COMPENSATED_REFUND en DynamoDB).
+   *  - Paso 3: Publica quotation.approved (Java crea Pedido en PostgreSQL) y material.low_stock.
    */
   @Post('checkout')
   @UseGuards(JwtAuthGuard)
@@ -262,102 +269,19 @@ export class ProductController {
     @Body() dto: MarketplaceCheckoutDto,
     @Request() req: { user: JwtPayload },
   ) {
-    const resolvedItems: Array<{ product: MarketplaceProduct; quantity: number }> = [];
-    let totalAmount = 0;
-
-    for (const item of dto.items) {
-      const prod = await this.repository.findById(item.productId);
-      if (!prod) {
-        throw new NotFoundException(`El mueble ${item.productId} ya no existe`);
-      }
-      if (prod.stock < item.quantity) {
-        throw new BadRequestException(
-          `Stock insuficiente para "${prod.name}" (disponibles: ${prod.stock})`,
-        );
-      }
-      resolvedItems.push({ product: prod, quantity: item.quantity });
-      totalAmount += prod.price * item.quantity;
-    }
-
-    const marketplaceRef = `MKT-${Date.now()}`;
-    const payment = await this.processPayment.execute({
-      quotationId: marketplaceRef,
-      clientId: req.user.email,
-      amount: totalAmount,
-      currency: 'BOB',
+    return this.checkoutSaga.execute({
+      clientEmail: req.user.email,
+      items: dto.items,
+      deliveryType: dto.deliveryType,
+      deliveryAddress: dto.deliveryAddress,
+      deliveryLat: dto.deliveryLat,
+      deliveryLng: dto.deliveryLng,
+      notes: dto.notes,
       cardNumber: dto.cardNumber,
       cardHolder: dto.cardHolder,
       expiryMonth: dto.expiryMonth,
       expiryYear: dto.expiryYear,
       cvv: dto.cvv,
     });
-
-    if (payment.status !== 'COMPLETED') {
-      throw new BadRequestException('El pago fue rechazado por la pasarela');
-    }
-
-    // Descontar stock en MongoDB y alertar si queda con stock bajo
-    for (const entry of resolvedItems) {
-      entry.product.stock = Math.max(0, entry.product.stock - entry.quantity);
-      await this.repository.save(entry.product);
-      if (entry.product.stock <= 2) {
-        await this.events.publish('material.low_stock', {
-          materialName: `${entry.product.name} (${entry.product.woodType})`,
-          stock: entry.product.stock,
-          minStock: 3,
-        });
-      }
-    }
-
-    // Determinar carpintero autor (si alguno de los muebles fue publicado por un carpintero)
-    const carpenterEmail = resolvedItems.find((e) => e.product.carpenterEmail)?.product
-      .carpenterEmail;
-
-    const summaryDescription = resolvedItems
-      .map((e) => `${e.product.name} (x${e.quantity})`)
-      .join(', ');
-
-    // Publicar evento para que Backend1 Java cree el Pedido en IN_PRODUCTION y lo auto-asigne
-    await this.events.publish('quotation.approved', {
-      quotationId: marketplaceRef,
-      clientId: req.user.email,
-      totalAmount,
-      paid: true,
-      carpenterEmail: carpenterEmail ?? null,
-      description: `Compra Marketplace: ${summaryDescription}${dto.notes ? ` — ${dto.notes}` : ''}`,
-      items: resolvedItems.map((e) => ({
-        description: `${e.product.name} (${e.product.dimensions})`,
-        furnitureType: mapCategoryToFurnitureType(e.product.category),
-        woodType: e.product.woodType.toUpperCase(),
-        quantity: e.quantity,
-        unitPrice: e.product.price,
-        dimensions: { lengthM: 1.5, widthM: 0.8, heightM: 0.8 },
-      })),
-      delivery: {
-        type: dto.deliveryType,
-        address:
-          dto.deliveryType === 'DELIVERY'
-            ? dto.deliveryAddress || 'Envío a domicilio'
-            : 'Recojo en taller',
-        lat: dto.deliveryLat,
-        lng: dto.deliveryLng,
-      },
-      occurredAt: new Date().toISOString(),
-    });
-
-    return {
-      status: payment.status,
-      paymentId: payment.id.value,
-      marketplaceRef,
-      totalAmount,
-      carpenterEmail: carpenterEmail ?? null,
-      items: resolvedItems.map((e) => ({
-        productId: e.product.id,
-        name: e.product.name,
-        quantity: e.quantity,
-        unitPrice: e.product.price,
-        remainingStock: e.product.stock,
-      })),
-    };
   }
 }

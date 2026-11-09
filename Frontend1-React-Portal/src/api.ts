@@ -158,6 +158,10 @@ async function s3Upload(file: File, folder = 'quotations'): Promise<string | nul
 }
 
 export const api = {
+  googleSsoUrl: (returnPath = '/login') => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://ramio.tech';
+    return `${AUTH}/auth/google?redirect_uri=${encodeURIComponent(`${origin}${returnPath}`)}`;
+  },
   login: (email: string, password: string) =>
     post<{ accessToken: string }>(`${AUTH}/auth/login`, { email, password }),
   register: (input: { name: string; email: string; password: string; phone?: string; address?: string }) =>

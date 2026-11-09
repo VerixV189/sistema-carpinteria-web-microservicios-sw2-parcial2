@@ -18,6 +18,7 @@ import { ProductController } from './infrastructure/adapters/inbound/rest/produc
 import { CreateQuotationHandler } from './application/quotation/commands/create-quotation.handler';
 import { GetQuotationHandler } from './application/quotation/queries/get-quotation.handler';
 import { ProcessPaymentHandler } from './application/payment/commands/process-payment.handler';
+import { MarketplaceCheckoutSaga } from './application/saga/marketplace-checkout.saga';
 import { QUOTATION_REPOSITORY } from './domain/quotation/repositories/quotation.repository';
 import { PAYMENT_LOG_REPOSITORY } from './domain/payment/repositories/payment-log.repository';
 import { PAYMENT_GATEWAY } from './application/payment/ports/payment-gateway.port';
@@ -56,6 +57,7 @@ import { DynamodbConfig } from './config/dynamodb.config';
     CreateQuotationHandler,
     GetQuotationHandler,
     ProcessPaymentHandler,
+    MarketplaceCheckoutSaga,
     MongoProductRepository,
     { provide: QUOTATION_REPOSITORY, useClass: MongoQuotationRepository },
     { provide: PAYMENT_LOG_REPOSITORY, useClass: DynamoDBPaymentLogRepository },

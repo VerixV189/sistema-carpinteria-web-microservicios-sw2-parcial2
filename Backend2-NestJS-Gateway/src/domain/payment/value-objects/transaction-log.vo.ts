@@ -2,7 +2,7 @@
 export class TransactionLog {
   constructor(
     public readonly paymentId: string,
-    public readonly event: 'INITIATED' | 'APPROVED' | 'DECLINED' | 'ERROR' | 'WEBHOOK',
+    public readonly event: 'INITIATED' | 'APPROVED' | 'DECLINED' | 'ERROR' | 'WEBHOOK' | 'SAGA_COMPENSATED_REFUND',
     public readonly detail: Record<string, unknown>,
     public readonly timestamp = new Date(),
   ) {}

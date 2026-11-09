@@ -163,4 +163,84 @@ export class AuthService {
     if (!user) throw new UnauthorizedException();
     return { id: user.id, email: user.email, name: user.name, role: user.role };
   }
+
+  /**
+   * SSO Federado Externo (Google OAuth 2.0 / OpenID Connect):
+   * Valida o aprovisiona automáticamente al usuario federado por Google y emite el JWT unificado del ecosistema.
+   */
+  async loginWithGoogleProfile(profile: { email: string; name: string; picture?: string }) {
+    const email = profile.email.trim().toLowerCase();
+    const displayName = profile.name?.trim() || email.split('@')[0];
+
+    let user = await this.users.findByEmail(email);
+    if (user) {
+      if (displayName && (!user.name || user.name === email.split('@')[0])) {
+        user.name = displayName;
+        await this.users.update(user);
+      }
+      return this.tokenFor(user);
+    }
+
+    // Si aún no existe en Redis, consultamos en business-service si es Carpintero o Cliente registrado
+    const base = this.config.get<string>('BUSINESS_SERVICE_URL');
+    const secret = this.config.get<string>('INTERNAL_SECRET');
+    let detectedRole: User['role'] = 'CLIENT';
+    let alreadyInPostgres = false;
+
+    if (base) {
+      try {
+        const res = await fetch(`${base}/graphql`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-internal-secret': secret ?? '' },
+          body: JSON.stringify({
+            query: '{ carpenters { id name email active } clients { id name email } }',
+          }),
+        });
+        const body = (await res.json()) as {
+          data?: {
+            carpenters?: { id: string; name: string; email: string; active: boolean }[];
+            clients?: { id: string; name: string; email: string }[];
+          };
+        };
+        const carp = (body.data?.carpenters ?? []).find((c) => c.email?.trim().toLowerCase() === email);
+        if (carp) {
+          detectedRole = 'CARPENTER';
+          alreadyInPostgres = true;
+        } else {
+          const cli = (body.data?.clients ?? []).find((c) => c.email?.trim().toLowerCase() === email);
+          if (cli) {
+            detectedRole = 'CLIENT';
+            alreadyInPostgres = true;
+          }
+        }
+      } catch (e) {
+        this.logger.warn(`Google SSO Postgres lookup failed: ${(e as Error).message}`);
+      }
+    }
+
+    user = await this.users.create({
+      email,
+      name: displayName,
+      password: bcrypt.hashSync(`google-sso-${Date.now()}`, 10),
+      role: detectedRole,
+    });
+
+    // Si es un nuevo cliente federado por Google y no estaba en PostgreSQL, creamos su ficha en business-service
+    if (detectedRole === 'CLIENT' && !alreadyInPostgres && base) {
+      try {
+        await fetch(`${base}/graphql`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-internal-secret': secret ?? '' },
+          body: JSON.stringify({
+            query: 'mutation($i: CreateClientInput!){ createClient(input:$i){ id email } }',
+            variables: { i: { name: user.name, email: user.email, phone: null, address: 'Registrado con Google SSO' } },
+          }),
+        });
+      } catch (e) {
+        this.logger.warn(`Google SSO createClient failed: ${(e as Error).message}`);
+      }
+    }
+
+    return this.tokenFor(user);
+  }
 }
