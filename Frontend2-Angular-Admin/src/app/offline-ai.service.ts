@@ -381,8 +381,19 @@ export class OfflineAiService {
   getCarpenters(): any[] { return this.read(KEYS.carpenters, SEED_CARPENTERS); }
   setCarpenters(list: any[]): void { this.write(KEYS.carpenters, list); }
 
-  getOrders(): any[] { return this.read(KEYS.orders, SEED_ORDERS); }
-  setOrders(list: any[]): void { this.write(KEYS.orders, list); }
+  getOrders(): any[] {
+    const list = this.read(KEYS.orders, SEED_ORDERS);
+    if (list.length > 0 && list.every((o: any) => o.totalPrice === undefined)) {
+      localStorage.removeItem(KEYS.orders);
+      return SEED_ORDERS;
+    }
+    return list;
+  }
+  setOrders(list: any[]): void {
+    if (Array.isArray(list) && list.some((o: any) => o.totalPrice !== undefined)) {
+      this.write(KEYS.orders, list);
+    }
+  }
 
   getDeliveries(): any[] { return this.read(KEYS.deliveries, SEED_DELIVERIES); }
   setDeliveries(list: any[]): void { this.write(KEYS.deliveries, list); }
@@ -567,7 +578,90 @@ export class OfflineAiService {
     };
   }
 
-  // ─── CU7: Generador de Reportes en Lenguaje Natural con IA Local (Offline) ──
+  // ─── Traducción de Valores y Columnas al Español ────────────────────────────
+
+  private static readonly ENUM_ES: Record<string, string> = {
+    REGULAR: 'Regular',
+    VIP: 'VIP (Preferencial)',
+    WHOLESALE: 'Mayorista',
+    FRECUENTE: 'Frecuente',
+    NUEVO: 'Nuevo',
+    PENDING: 'Pendiente',
+    APPROVED: 'Aprobado',
+    IN_PRODUCTION: 'En fabricación',
+    READY: 'Listo para entrega',
+    DELIVERED: 'Entregado',
+    CANCELLED: 'Cancelado',
+    SCHEDULED: 'Programada',
+    IN_TRANSIT: 'En camino',
+    FAILED: 'Fallida',
+    RESCHEDULED: 'Reprogramada',
+    DELIVERY: 'Envío a domicilio',
+    PICKUP: 'Recojo en taller',
+    MORNING: 'Mañana',
+    AFTERNOON: 'Tarde',
+    EVENING: 'Noche',
+    DRAFT: 'Solicitud inicial',
+    QUOTED: 'Precio enviado',
+    COUNTER_OFFER: 'Contraoferta',
+    ACCEPTED: 'Aceptada',
+    REJECTED: 'Rechazada',
+    CONVERTED: 'Convertida en pedido',
+    GENERAL: 'General',
+    MUEBLES: 'Muebles',
+    COCINAS: 'Cocinas',
+    PUERTAS_VENTANAS: 'Puertas y ventanas',
+    RESTAURACION: 'Restauración',
+    TALLER_FINO: 'Taller fino',
+    ACTIVO: 'Activo',
+    INACTIVO: 'Inactivo',
+  };
+
+  private static readonly COL_ES: Record<string, string> = {
+    id: 'ID',
+    name: 'Nombre',
+    email: 'Correo',
+    phone: 'Teléfono',
+    address: 'Dirección',
+    segment: 'Segmento',
+    status: 'Estado',
+    total_orders: 'Pedidos',
+    total_pedidos: 'Pedidos',
+    total_spent: 'Total_Bs',
+    total_facturado_bs: 'Total_Bs',
+    total_price: 'Monto_Bs',
+    monto_total_bs: 'Monto_Bs',
+    delivery_date: 'Fecha_Entrega',
+    scheduled_date: 'Fecha_Programada',
+    time_slot: 'Horario',
+    delivery_type: 'Modalidad',
+    specialty: 'Especialidad',
+    years_experience: 'Experiencia_Años',
+    hourly_rate: 'Tarifa_Hora_Bs',
+  };
+
+  translateValueEs(val: any): any {
+    if (typeof val === 'string') {
+      const upper = val.trim().toUpperCase();
+      if (OfflineAiService.ENUM_ES[upper]) return OfflineAiService.ENUM_ES[upper];
+    }
+    if (typeof val === 'boolean') return val ? 'Sí' : 'No';
+    return val;
+  }
+
+  translateReportRows(rows: Record<string, any>[]): Record<string, any>[] {
+    if (!Array.isArray(rows)) return [];
+    return rows.map((row) => {
+      const out: Record<string, any> = {};
+      for (const [k, v] of Object.entries(row)) {
+        const cleanKey = OfflineAiService.COL_ES[k.toLowerCase()] ?? k;
+        out[cleanKey] = this.translateValueEs(v);
+      }
+      return out;
+    });
+  }
+
+  // ─── Generador de Reportes en Lenguaje Natural con IA Local (Offline) ──────
 
   generateOfflineReport(rawQuery: string): OfflineReportResult {
     const cleanQuery = SqlSecurityValidator.sanitizeUserPrompt(rawQuery);
@@ -585,29 +679,34 @@ export class OfflineAiService {
     let narrative = '';
 
     // 1. Reporte de Mejores Clientes / Segmentación / Ventas por Cliente
-    if (q.includes('cliente') || q.includes('comprador') || q.includes('vip') || q.includes('frecuente')) {
+    if (q.includes('cliente') || q.includes('comprador') || q.includes('vip') || q.includes('frecuente') || q.includes('factur')) {
       sql = SqlSecurityValidator.validateSelectSql(
         'SELECT c.id, c.nombre, c.email, c.segmento, COUNT(p.id) AS total_pedidos, SUM(p.monto_total) AS total_facturado_bs FROM clientes c LEFT JOIN pedidos p ON p.cliente_id = c.id GROUP BY c.id ORDER BY total_facturado_bs DESC LIMIT 100',
       );
       rows = clients.map((c) => {
-        const cOrders = orders.filter((o) => String(o.client?.id) === String(c.id) || o.client?.name === c.name);
-        const sum = cOrders.reduce((acc, o) => acc + Number(o.totalPrice ?? 0), 0);
+        const cOrders = orders.filter(
+          (o) =>
+            String(o.client?.id) === String(c.id) ||
+            (o.client?.name && c.name && o.client.name.toLowerCase() === c.name.toLowerCase()),
+        );
+        const sum = Math.round(cOrders.reduce((acc, o) => acc + Number(o.totalPrice ?? 0), 0) * 100) / 100;
         return {
           ID: c.id,
           Cliente: c.name,
           Correo: c.email,
-          Segmento: c.segment ?? 'REGULAR',
+          Segmento: this.translateValueEs(c.segment ?? 'REGULAR'),
           Pedidos: cOrders.length,
           Total_Bs: sum,
         };
-      }).sort((a, b) => b.Total_Bs - a.Total_Bs);
+      }).sort((a, b) => b.Total_Bs - a.Total_Bs || b.Pedidos - a.Pedidos);
 
       const topClient = rows[0];
       const totalFacturado = rows.reduce((s, r) => s + Number(r['Total_Bs'] || 0), 0);
-      narrative = `Análisis IA Local completado sobre ${rows.length} clientes sincronizados. El cliente con mayor facturación es ${topClient?.['Cliente'] ?? 'N/A'} (Bs ${topClient?.['Total_Bs'] ?? 0}), acumulando un volumen total de Bs ${totalFacturado.toLocaleString('es-BO')} en cartera.`;
+      const conCompras = rows.filter((r) => Number(r['Pedidos'] || 0) > 0).length;
+      narrative = `Análisis ejecutivo completado sobre ${rows.length} clientes registrados (${conCompras} con pedidos facturados). El cliente líder en facturación es ${topClient?.['Cliente'] ?? 'N/A'} (Bs ${Number(topClient?.['Total_Bs'] ?? 0).toLocaleString('es-BO')}), acumulando un volumen total de Bs ${totalFacturado.toLocaleString('es-BO')} en cartera.`;
     }
-    // 2. Reporte de Stock Bajo / Marketplace / Muebles / Materiales
-    else if (q.includes('stock') || q.includes('mueble') || q.includes('producto') || q.includes('marketplace') || q.includes('material') || q.includes('inventario')) {
+    // 2. Reporte de Stock Bajo / Tienda / Muebles / Materiales
+    else if (q.includes('stock') || q.includes('mueble') || q.includes('producto') || q.includes('marketplace') || q.includes('tienda') || q.includes('material') || q.includes('inventario')) {
       const onlyLow = q.includes('bajo') || q.includes('agotad') || q.includes('poco') || q.includes('alerta');
       sql = SqlSecurityValidator.validateSelectSql(
         onlyLow
@@ -622,48 +721,56 @@ export class OfflineAiService {
         Madera: p.woodType,
         Precio_Bs: p.price,
         Stock: p.stock,
-        Estado_Stock: p.stock <= 2 ? 'ALERTA STOCK BAJO' : 'DISPONIBLE',
+        Valor_Stock_Bs: Math.round(Number(p.price || 0) * Number(p.stock || 0) * 100) / 100,
+        Estado_Stock: p.stock <= 0 ? 'Agotado' : p.stock <= 2 ? 'Alerta stock bajo' : 'Disponible',
         Carpintero: p.carpenterName ?? 'Taller Central',
       }));
       const lowCount = products.filter((p) => p.stock <= 2).length;
       const valorInventario = products.reduce((s, p) => s + p.price * p.stock, 0);
-      narrative = `Reporte de inventario generado por IA Local: Se analizaron ${products.length} muebles del Marketplace (valorizado en Bs ${valorInventario.toLocaleString('es-BO')}). Se detectaron ${lowCount} mueble(s) con alerta de reposición inmediata (stock <= 2 unidades).`;
+      narrative = `Reporte de inventario: Se analizaron ${products.length} muebles publicados en la Tienda (valorizado en Bs ${valorInventario.toLocaleString('es-BO')}). Se detectaron ${lowCount} mueble(s) con alerta de reposición (stock <= 2 unidades).`;
     }
     // 3. Reporte de Entregas / Despachos / Rutas
     else if (q.includes('entrega') || q.includes('despacho') || q.includes('envío') || q.includes('envio') || q.includes('octubre') || q.includes('noviembre') || q.includes('semana')) {
       sql = SqlSecurityValidator.validateSelectSql(
         'SELECT id, pedido_id, fecha_programada, horario, direccion, estado, modalidad FROM entregas ORDER BY fecha_programada ASC LIMIT 100',
       );
-      rows = deliveries.map((d) => ({
-        Entrega_ID: d.id,
-        Pedido_ID: d.orderId,
-        Fecha: d.scheduledDate,
-        Horario: d.timeSlot === 'MORNING' ? 'Mañana' : 'Tarde',
-        Estado: d.status,
-        Modalidad: d.deliveryType ?? 'DELIVERY',
-        Direccion: d.address ?? 'Recojo en Taller',
-      }));
+      rows = deliveries.map((d) => {
+        const ord = orders.find((o) => String(o.id) === String(d.orderId));
+        return {
+          Entrega_ID: d.id,
+          Pedido_ID: d.orderId,
+          Cliente: ord?.client?.name ?? 'Cliente',
+          Fecha: d.scheduledDate,
+          Horario: this.translateValueEs(d.timeSlot ?? 'MORNING'),
+          Estado: this.translateValueEs(d.status),
+          Modalidad: this.translateValueEs(d.deliveryType ?? 'DELIVERY'),
+          Monto_Pedido_Bs: Number(ord?.totalPrice ?? 0),
+          Direccion: d.address ?? 'Recojo en taller',
+        };
+      });
       const programadas = deliveries.filter((d) => d.status === 'SCHEDULED' || d.status === 'IN_TRANSIT').length;
-      narrative = `Se encontraron ${deliveries.length} entregas en la base de datos local (${programadas} pendientes de despacho y ${deliveries.length - programadas} completadas). Todas las rutas cuentan con geolocalización sincronizada.`;
+      narrative = `Se encontraron ${deliveries.length} entregas registradas (${programadas} pendientes de despacho y ${deliveries.length - programadas} completadas). Todas las rutas cuentan con seguimiento sincronizado.`;
     }
     // 4. Reporte de Carpinteros / Carga de Trabajo / Taller
     else if (q.includes('carpintero') || q.includes('taller') || q.includes('carga') || q.includes('artesano')) {
       sql = SqlSecurityValidator.validateSelectSql(
-        'SELECT c.id, c.nombre, c.especialidad, c.tarifa_hora_bs, COUNT(p.id) AS pedidos_asignados FROM carpinteros c LEFT JOIN pedidos p ON p.carpintero_id = c.id GROUP BY c.id ORDER BY pedidos_asignados DESC LIMIT 100',
+        'SELECT c.id, c.nombre, c.especialidad, c.tarifa_hora_bs, COUNT(p.id) AS pedidos_asignados, SUM(p.monto_total) AS valor_asignado_bs FROM carpinteros c LEFT JOIN pedidos p ON p.carpintero_id = c.id GROUP BY c.id ORDER BY pedidos_asignados DESC LIMIT 100',
       );
       rows = carpenters.map((c) => {
         const assigned = orders.filter((o) => (o.carpenters ?? []).some((oc: any) => String(oc.id) === String(c.id) || oc.name === c.name));
+        const valorAsignado = Math.round(assigned.reduce((acc, o) => acc + Number(o.totalPrice ?? 0), 0) * 100) / 100;
         return {
           ID: c.id,
           Carpintero: c.name,
-          Especialidad: c.specialty,
-          Experiencia_Anios: c.yearsExperience,
+          Especialidad: this.translateValueEs(c.specialty),
+          Experiencia_Años: c.yearsExperience,
           Tarifa_Hora_Bs: c.hourlyRate,
           Pedidos_Asignados: assigned.length,
-          Estado: c.active ? 'ACTIVO' : 'INACTIVO',
+          Valor_Asignado_Bs: valorAsignado,
+          Estado: c.active ? 'Activo' : 'Inactivo',
         };
-      });
-      narrative = `Análisis de capacidad de taller (IA Local): Hay ${carpenters.filter((c) => c.active).length} maestros carpinteros activos atendiendo ${orders.length} órdenes de producción.`;
+      }).sort((a, b) => b.Pedidos_Asignados - a.Pedidos_Asignados || b.Valor_Asignado_Bs - a.Valor_Asignado_Bs);
+      narrative = `Análisis de capacidad de taller: Hay ${carpenters.filter((c) => c.active).length} maestros carpinteros activos atendiendo ${orders.length} órdenes de producción.`;
     }
     // 5. Reporte de Cotizaciones
     else if (q.includes('cotiz') || q.includes('presupuesto') || q.includes('contraoferta')) {
@@ -671,16 +778,16 @@ export class OfflineAiService {
         'SELECT id, cliente_email, estado, estimacion_ia_bs, monto_final_bs, modalidad_entrega, fecha FROM cotizaciones ORDER BY fecha DESC LIMIT 100',
       );
       rows = quotations.map((c) => ({
-        Cotizacion_ID: c.id,
+        Cotizacion_ID: String(c.id).slice(0, 8),
         Cliente: c.clientId,
-        Estado: c.status,
-        Estimacion_IA_Bs: c.aiEstimate ?? c.totalAmount,
-        Monto_Final_Bs: c.payableAmount ?? c.finalAmount ?? c.totalAmount,
-        Entrega: c.delivery?.type ?? 'PICKUP',
+        Estado: this.translateValueEs(c.status),
+        Estimacion_IA_Bs: Number(c.aiEstimate ?? c.totalAmount ?? 0),
+        Monto_Final_Bs: Number(c.payableAmount ?? c.finalAmount ?? c.totalAmount ?? 0),
+        Entrega: this.translateValueEs(c.delivery?.type ?? 'PICKUP'),
         Fecha: (c.createdAt ?? '').slice(0, 10),
       }));
       const totalCotizado = quotations.reduce((s, c) => s + Number(c.payableAmount ?? c.totalAmount ?? 0), 0);
-      narrative = `Se registran ${quotations.length} cotizaciones en el almacenamiento local por un valor potencial de Bs ${totalCotizado.toLocaleString('es-BO')}.`;
+      narrative = `Se registran ${quotations.length} cotizaciones por un valor comercial acumulado de Bs ${totalCotizado.toLocaleString('es-BO')}.`;
     }
     // 6. Reporte General de Pedidos / Ingresos / Pendientes (Por defecto)
     else {
@@ -691,27 +798,27 @@ export class OfflineAiService {
           : 'SELECT id, cliente_nombre, descripcion, estado, monto_total_bs, fecha_entrega FROM pedidos ORDER BY id DESC LIMIT 100',
       );
       const list = onlyPending
-        ? orders.filter((o) => ['PENDING', 'IN_PRODUCTION', 'READY'].includes(o.status))
+        ? orders.filter((o) => ['PENDING', 'APPROVED', 'IN_PRODUCTION', 'READY'].includes(o.status))
         : orders;
       rows = (list.length > 0 ? list : orders).map((o) => ({
         Pedido_ID: o.id,
         Cliente: o.client?.name ?? 'Cliente',
         Descripcion: o.description,
-        Estado: o.status,
-        Monto_Bs: o.totalPrice,
+        Estado: this.translateValueEs(o.status),
+        Monto_Bs: Number(o.totalPrice ?? 0),
         Fecha_Entrega: o.deliveryDate ?? o.delivery?.scheduledDate ?? 'Sin fecha',
         Carpintero: o.carpenters?.[0]?.name ?? 'Por asignar',
       }));
       const totalMonto = rows.reduce((s, r) => s + Number(r['Monto_Bs'] || 0), 0);
-      const enCurso = orders.filter((o) => o.status === 'IN_PRODUCTION' || o.status === 'PENDING').length;
-      narrative = `Resumen ejecutivo generado por IA Local (Sin Internet): Se analizaron ${rows.length} pedidos por un total de Bs ${totalMonto.toLocaleString('es-BO')} (promedio Bs ${rows.length ? Math.round(totalMonto / rows.length) : 0} por orden). Actualmente hay ${enCurso} pedido(s) en fabricación/pendientes.`;
+      const enCurso = orders.filter((o) => o.status === 'IN_PRODUCTION' || o.status === 'PENDING' || o.status === 'APPROVED').length;
+      narrative = `Resumen ejecutivo de pedidos: Se analizaron ${rows.length} órdenes por un total de Bs ${totalMonto.toLocaleString('es-BO')} (promedio Bs ${rows.length ? Math.round(totalMonto / rows.length).toLocaleString('es-BO') : 0} por pedido). Actualmente hay ${enCurso} pedido(s) activos en producción o por aprobar.`;
     }
 
-    const stats = `Filas procesadas localmente: ${rows.length} · Modo: IA Local Offline (SQLite/LocalStorage Engine)`;
+    const stats = `Filas procesadas: ${rows.length} · Datos sincronizados en tiempo real`;
 
     return {
       narrative,
-      source: 'IA Local en el Frontend (Motor SQL Offline Seguro)',
+      source: 'Motor Analítico SQL Validado (Carpintería El Roble)',
       sql,
       rows,
       stats,
@@ -774,59 +881,109 @@ export class OfflineAiService {
 
   exportReportToPdf(report: OfflineReportResult, userQuery: string): void {
     if (typeof window === 'undefined') return;
-    const cols = report.rows?.length ? Object.keys(report.rows[0]) : [];
-    const ths = cols.map((c) => `<th>${c}</th>`).join('');
-    const trs = (report.rows ?? [])
+    const rows = report.rows ?? [];
+    const cols = rows.length ? Object.keys(rows[0]) : [];
+    const ths = cols.map((c) => `<th>${c.replace(/_/g, ' ')}</th>`).join('');
+    const trs = rows
       .map(
         (r) =>
           `<tr>${cols.map((c) => `<td>${String(r[c] ?? '')}</td>`).join('')}</tr>`,
       )
       .join('');
 
+    // Detectar columna de etiqueta y métrica principal para gráfica impresa
+    const idPattern = /(^id$|_id$)/i;
+    const numCols = cols.filter((c) => !idPattern.test(c) && rows.some((r) => typeof r[c] === 'number' && !isNaN(r[c])));
+    const metricCol = numCols[numCols.length - 1] ?? numCols[0] ?? '';
+    const labelCol = cols.find((c) => !idPattern.test(c) && typeof rows[0]?.[c] === 'string') ?? cols[0] ?? '';
+
+    let chartHtml = '';
+    if (metricCol && labelCol && rows.length > 0) {
+      const vals = rows.map((r) => Number(r[metricCol] || 0));
+      const total = vals.reduce((a, b) => a + b, 0);
+      const max = Math.max(1, ...vals);
+      const avg = rows.length ? Math.round((total / rows.length) * 100) / 100 : 0;
+      const topRow = [...rows].sort((a, b) => Number(b[metricCol] || 0) - Number(a[metricCol] || 0))[0];
+      const bars = rows.slice(0, 10).map((r) => {
+        const v = Number(r[metricCol] || 0);
+        const pct = Math.max(2, Math.round((v / max) * 100));
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12px">
+          <div style="width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${String(r[labelCol] ?? '')}</div>
+          <div style="flex:1;background:#ede4d8;height:14px;border-radius:7px;overflow:hidden">
+            <div style="width:${pct}%;background:#8B5A2B;height:100%;border-radius:7px"></div>
+          </div>
+          <div style="width:90px;text-align:right;font-weight:700">${v.toLocaleString('es-BO')}</div>
+        </div>`;
+      }).join('');
+
+      chartHtml = `
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+          <div class="kpi"><div class="kl">Total (${metricCol.replace(/_/g, ' ')})</div><div class="kv">${total.toLocaleString('es-BO')}</div></div>
+          <div class="kpi"><div class="kl">Promedio</div><div class="kv">${avg.toLocaleString('es-BO')}</div></div>
+          <div class="kpi"><div class="kl">Líder / Máximo</div><div class="kv" style="font-size:14px">${String(topRow?.[labelCol] ?? '—')} (${Number(topRow?.[metricCol] || 0).toLocaleString('es-BO')})</div></div>
+          <div class="kpi"><div class="kl">Registros Analizados</div><div class="kv">${rows.length}</div></div>
+        </div>
+        <div class="box">
+          <div style="font-weight:700;color:#8B5A2B;margin-bottom:10px;font-size:13px">GRÁFICA COMPARATIVA — ${metricCol.replace(/_/g, ' ').toUpperCase()} POR ${labelCol.replace(/_/g, ' ').toUpperCase()}</div>
+          ${bars}
+        </div>
+      `;
+    }
+
+    const origin = window.location.origin;
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <title>Reporte Ejecutivo - Carpintería El Roble</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; color: #2b2118; margin: 32px; }
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #8B5A2B; padding-bottom: 12px; margin-bottom: 20px; }
-    .brand { font-size: 22px; font-weight: 800; color: #8B5A2B; }
-    .badge { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #2b2118; margin: 28px; }
+    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #8B5A2B; padding-bottom: 12px; margin-bottom: 18px; }
+    .brand-wrap { display: flex; align-items: center; gap: 12px; }
+    .logo { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+    .brand { font-size: 20px; font-weight: 800; color: #8B5A2B; }
+    .badge { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+    .kpi { background: #FAF7F2; border: 1px solid #E5DEC9; border-radius: 8px; padding: 10px 12px; }
+    .kl { font-size: 11px; color: #6b7280; text-transform: uppercase; }
+    .kv { font-size: 18px; font-weight: 800; color: #3B2F2F; margin-top: 4px; }
     .box { background: #FAF7F2; border: 1px solid #E5DEC9; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-    .sql { font-family: monospace; font-size: 12px; background: #f3f4f6; padding: 8px; border-radius: 6px; color: #374151; word-break: break-all; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
-    th { background: #8B5A2B; color: #fff; text-align: left; padding: 9px 10px; }
-    td { border-bottom: 1px solid #e5e7eb; padding: 8px 10px; }
+    .sql { font-family: monospace; font-size: 11px; background: #f3f4f6; padding: 8px; border-radius: 6px; color: #374151; word-break: break-all; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12.5px; }
+    th { background: #8B5A2B; color: #fff; text-align: left; padding: 8px 10px; }
+    td { border-bottom: 1px solid #e5e7eb; padding: 7px 10px; }
     tr:nth-child(even) td { background: #faf8f5; }
-    .footer { margin-top: 24px; font-size: 11px; color: #6b7280; text-align: center; }
+    .footer { margin-top: 22px; font-size: 11px; color: #6b7280; text-align: center; }
   </style>
 </head>
 <body>
   <div class="header">
-    <div>
-      <div class="brand">CARPINTERÍA ARTESANAL "EL ROBLE"</div>
-      <div style="font-size:13px;color:#6b7280">Reporte Ejecutivo de Inteligencia de Negocio</div>
+    <div class="brand-wrap">
+      <img src="${origin}/logo_el_roble.png" onerror="this.style.display='none'" class="logo" alt="El Roble" />
+      <div>
+        <div class="brand">CARPINTERÍA ARTESANAL "EL ROBLE"</div>
+        <div style="font-size:12.5px;color:#6b7280">Reporte Ejecutivo de Inteligencia de Negocio</div>
+      </div>
     </div>
     <div class="badge">${report.source}</div>
   </div>
   <div class="box">
-    <div><b>Consulta en Lenguaje Natural:</b> «${userQuery}»</div>
-    <div style="margin-top:8px"><b>Conclusión Ejecutiva IA:</b> ${report.narrative}</div>
-    <div style="margin-top:8px" class="sql"><b>SQL Ejecutado:</b> ${report.sql}</div>
+    <div><b>Consulta Ejecutiva:</b> «${userQuery}»</div>
+    <div style="margin-top:6px"><b>Conclusión Ejecutiva IA:</b> ${report.narrative}</div>
+    <div style="margin-top:6px" class="sql"><b>SQL Validado:</b> ${report.sql}</div>
   </div>
+  ${chartHtml}
   <table>
     <thead><tr>${ths}</tr></thead>
     <tbody>${trs}</tbody>
   </table>
   <div class="footer">
-    Generado el ${new Date().toLocaleString('es-BO')} · Funciona 100% Offline con datos sincronizados en el navegador.
+    Generado el ${new Date().toLocaleString('es-BO')} · Carpintería El Roble — Sistema de Gestión Empresarial
   </div>
-  <script>window.onload = () => { setTimeout(() => window.print(), 250); };</script>
+  <script>window.onload = () => { setTimeout(() => window.print(), 300); };</script>
 </body>
 </html>`;
 
-    const win = window.open('', '_blank', 'width=960,height=720');
+    const win = window.open('', '_blank', 'width=980,height=760');
     if (win) {
       win.document.open();
       win.document.write(html);

@@ -13,9 +13,9 @@ interface NavLink {
 }
 
 const LINKS: NavLink[] = [
-  // Públicas — el portal también es la vitrina y Marketplace del negocio
+  // Públicas — el portal también es la vitrina y catálogo de venta del negocio
   { to: '/', label: 'Inicio', icon: 'home' },
-  { to: '/productos', label: 'Marketplace', icon: 'package' },
+  { to: '/productos', label: 'Tienda', icon: 'package' },
   { to: '/nosotros', label: 'Nosotros', icon: 'info' },
   { to: '/contacto', label: 'Contacto', icon: 'mail' },
   // Zona cliente (autenticada)
@@ -71,7 +71,7 @@ export default function Navbar() {
     <>
       <nav style={styles.nav}>
         <Link to="/" style={styles.brand}>
-          <span style={styles.logo}>ER</span>
+          <img src="/logo_el_roble.png" alt="Carpintería El Roble" style={styles.logoImg} />
           <span>Carpintería El Roble</span>
         </Link>
         <div style={styles.links}>
@@ -97,7 +97,7 @@ export default function Navbar() {
               background: offline ? '#f59e0b' : '#22c55e',
               display: 'inline-block',
             }} />
-            <span>{offline ? 'Offline · IA Local' : 'Online'}</span>
+            <span>{offline ? 'Sin conexión · IA Local' : 'En línea'}</span>
           </button>
           {session?.role === 'CLIENT' && itemsInCart > 0 && (
             <Link to="/productos?cart=1" style={styles.cartBtn} title="Ver carrito de compras">
@@ -127,11 +127,11 @@ export default function Navbar() {
       {offline && (
         <div style={styles.offlineBanner}>
           <span>
-            ⚡ <b>Modo Sin Conexión (Offline Activo):</b> Estás viendo datos locales sincronizados en el navegador y utilizando el motor de <b>IA Local</b> sin internet.
+            ⚡ <b>Modo Sin Conexión Activo:</b> Estás viendo datos locales sincronizados en el navegador y utilizando el motor de <b>IA Local</b> sin internet.
           </span>
           {isForceOffline() && (
             <button onClick={() => setForceOffline(false)} style={styles.reconnectBtn}>
-              Volver a Online
+              Volver a En línea
             </button>
           )}
         </div>
@@ -148,10 +148,9 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
   },
   brand: { display: 'flex', alignItems: 'center', gap: 10, color: '#FAF7F2', textDecoration: 'none', fontWeight: 700, fontSize: 17 },
-  logo: {
-    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    width: 32, height: 32, borderRadius: 8, background: '#8B5A2B',
-    color: '#FAF7F2', fontSize: 13, fontWeight: 800, letterSpacing: 0.5,
+  logoImg: {
+    width: 38, height: 38, borderRadius: 8, objectFit: 'cover',
+    border: '1px solid rgba(212,165,116,.4)', background: '#fff',
   },
   links: { display: 'flex', gap: 4, overflowX: 'auto', scrollbarWidth: 'none', minWidth: 0, flexShrink: 1 },
   link: {

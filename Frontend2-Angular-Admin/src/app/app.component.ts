@@ -17,7 +17,10 @@ import { OfflineAiService } from './offline-ai.service';
     } @else {
       <div class="layout" [class.con-chat]="chatOpen()">
         <aside class="side">
-          <div class="brand"><span class="logo">ER</span><h3>Panel Admin</h3></div>
+          <div class="brand">
+            <img src="/logo_el_roble.png" onerror="this.onerror=null;this.src='assets/logo_el_roble.png'" class="logo-img" alt="El Roble" />
+            <h3>Panel Admin</h3>
+          </div>
 
           @if (isStandalone()) {
             <button
@@ -25,16 +28,16 @@ import { OfflineAiService } from './offline-ai.service';
               class="net-pill"
               [class.net-offline]="offlineAi.offline()"
               (click)="offlineAi.toggleForceOffline()"
-              title="Haz clic para cambiar entre Modo Online y Modo Offline + IA Local"
+              title="Haz clic para cambiar entre Modo En línea y Modo Sin conexión + IA Local"
             >
               <span class="dot"></span>
-              <span>{{ offlineAi.offline() ? 'Offline · IA Local' : 'Online · Sincronizado' }}</span>
+              <span>{{ offlineAi.offline() ? 'Sin conexión · IA Local' : 'En línea · Sincronizado' }}</span>
             </button>
           }
 
           <a routerLink="/dashboard" routerLinkActive="active">
             <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-            Dashboard
+            Panel General
           </a>
           <div class="sec">Gestión</div>
           <a routerLink="/clientes" routerLinkActive="active">
@@ -56,7 +59,7 @@ import { OfflineAiService } from './offline-ai.service';
           <div class="sec">Comercial</div>
           <a routerLink="/marketplace" routerLinkActive="active">
             <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Marketplace
+            Tienda de Muebles
           </a>
           <a routerLink="/cotizaciones" routerLinkActive="active">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
@@ -115,7 +118,7 @@ import { OfflineAiService } from './offline-ai.service';
     .layout { display: flex; min-height: 100vh; }
     .side { width: 230px; background: #fff; border-right: 1px solid #eee; padding: 20px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
     .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .logo { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: #8B5A2B; color: #FAF7F2; font-size: 13px; font-weight: 800; }
+    .logo-img { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex-shrink: 0; box-shadow: 0 2px 6px rgba(59,47,47,.12); }
     .side h3 { margin: 0; color: #8B5A2B; font-size: 17px; }
     .net-pill { display: flex; align-items: center; gap: 8px; padding: 7px 11px; margin-bottom: 10px; border-radius: 999px; border: 1px solid #86efac; background: #f0fdf4; color: #166534; font-size: 12px; font-weight: 700; cursor: pointer; text-align: left; }
     .net-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; flex-shrink: 0; }

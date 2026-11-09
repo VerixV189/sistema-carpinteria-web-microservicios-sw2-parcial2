@@ -284,14 +284,17 @@
 {:else}
 {#if isStandalone}
 <header class="topbar">
-  <div class="brand"><Icon name="hammer" size={22} /><strong>Mi Taller</strong></div>
+  <div class="brand">
+    <img src="/logo_el_roble.png" alt="El Roble" style="width:36px;height:36px;border-radius:8px;object-fit:cover" />
+    <strong>Mi Taller — Carpintería El Roble</strong>
+  </div>
   <div class="who">
     <button
       class="out"
       style="background:{offline ? '#fef3c7' : '#dcfce7'};color:{offline ? '#92400e' : '#166534'};border-color:{offline ? '#f59e0b' : '#86efac'};font-weight:700"
       on:click={() => { toggleForceOffline(); offline = isOffline(); cargar(true); cargarProductos(); }}
     >
-      {offline ? '⚡ Offline · IA Local' : '● Online'}
+      {offline ? '⚡ Sin conexión · IA Local' : '● En línea'}
     </button>
     <span class="hola">Hola, <b>{nombre}</b></span>
     <button class="out" on:click={salir}><Icon name="logout" size={15} /> Salir</button>

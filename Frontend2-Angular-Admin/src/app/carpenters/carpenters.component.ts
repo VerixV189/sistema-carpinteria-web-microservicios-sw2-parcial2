@@ -30,7 +30,7 @@ const SPECIALTIES: [string, string][] = [
 
     <div class="card">
       <table>
-        <thead><tr><th>Nombre</th><th>Email</th><th>Especialidad</th><th>Experiencia</th><th>Bs./h</th><th>Estado</th><th style="width:60px"></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Correo electrónico</th><th>Especialidad</th><th>Experiencia</th><th>Bs./h</th><th>Estado</th><th style="width:60px"></th></tr></thead>
         <tbody>
           <tr *ngFor="let c of carpenters">
             <td><strong>{{ c.name }}</strong></td>
@@ -54,7 +54,7 @@ const SPECIALTIES: [string, string][] = [
           <form [formGroup]="form" (ngSubmit)="save()">
             <div class="modal-body form-grid">
               <label class="f full">Nombre *<input formControlName="name" /></label>
-              <label class="f">Email *<input formControlName="email" type="email" /></label>
+              <label class="f">Correo electrónico *<input formControlName="email" type="email" /></label>
               <label class="f">Teléfono<input formControlName="phone" /></label>
               <label class="f">Especialidad
                 <select formControlName="specialty">

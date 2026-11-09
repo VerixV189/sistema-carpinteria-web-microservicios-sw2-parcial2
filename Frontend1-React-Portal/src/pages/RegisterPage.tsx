@@ -39,14 +39,14 @@ export default function RegisterPage() {
     <div style={s.page}>
       <form onSubmit={submit} style={s.card}>
         <div style={s.head}>
-          <span style={s.logo}>ER</span>
+          <img src="/logo_el_roble.png" alt="Carpintería El Roble" style={s.logoImg} />
           <h2 style={s.title}>Crea tu cuenta</h2>
           <p style={s.sub}>Regístrate para cotizar y hacer seguimiento a tus pedidos</p>
         </div>
         <label style={s.label}>Nombre completo
           <input required value={form.name} onChange={set('name')} placeholder="María González" style={s.input} />
         </label>
-        <label style={s.label}>Email
+        <label style={s.label}>Correo electrónico
           <input type="email" required value={form.email} onChange={set('email')} placeholder="tu@correo.com" style={s.input} />
         </label>
         <label style={s.label}>Contraseña (mínimo 6 caracteres)
@@ -72,7 +72,7 @@ const s: Record<string, React.CSSProperties> = {
   page: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 'calc(100vh - 64px)', background: '#F5F1EC', padding: '24px 0' },
   card: { background: '#fff', padding: '32px', borderRadius: 12, boxShadow: '0 8px 24px rgba(59,47,47,.12)', display: 'flex', flexDirection: 'column', gap: 12, width: 380 },
   head: { textAlign: 'center', marginBottom: 6 },
-  logo: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: 12, background: '#8B5A2B', color: '#FAF7F2', fontSize: 18, fontWeight: 800, marginBottom: 12 },
+  logoImg: { width: 64, height: 64, borderRadius: 14, objectFit: 'cover', marginBottom: 10, boxShadow: '0 4px 12px rgba(59,47,47,.16)' },
   title: { margin: 0, color: '#3B2F2F', fontSize: 20 },
   sub: { margin: '4px 0 0', color: '#8a7f75', fontSize: 13 },
   label: { display: 'flex', flexDirection: 'column', gap: 5, fontSize: 13, color: '#5c534a', fontWeight: 600 },

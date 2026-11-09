@@ -11,11 +11,11 @@ import { AuthService } from './auth.service';
     <div class="page">
       <form class="card" (ngSubmit)="submit()">
         <div class="head">
-          <span class="logo">ER</span>
+          <img src="/logo_el_roble.png" onerror="this.onerror=null;this.src='assets/logo_el_roble.png'" class="logo-img" alt="Carpintería El Roble" />
           <h2>Panel de Administración</h2>
           <p>Carpintería El Roble — acceso restringido</p>
         </div>
-        <label>Email
+        <label>Correo electrónico
           <input type="email" [(ngModel)]="email" name="email" required placeholder="admin@carpinteria.com" />
         </label>
         <label>Contraseña
@@ -30,7 +30,7 @@ import { AuthService } from './auth.service';
     .page { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #F5F1EC; }
     .card { background: #fff; padding: 36px 32px; border-radius: 12px; box-shadow: 0 8px 24px rgba(59,47,47,.12); display: flex; flex-direction: column; gap: 14px; width: 360px; }
     .head { text-align: center; margin-bottom: 8px; }
-    .logo { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; background: #8B5A2B; color: #FAF7F2; font-size: 18px; font-weight: 800; margin-bottom: 12px; }
+    .logo-img { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(59,47,47,.16); }
     .head h2 { margin: 0; color: #3B2F2F; font-size: 19px; }
     .head p { margin: 4px 0 0; color: #8a7f75; font-size: 13px; }
     label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5c534a; font-weight: 600; }

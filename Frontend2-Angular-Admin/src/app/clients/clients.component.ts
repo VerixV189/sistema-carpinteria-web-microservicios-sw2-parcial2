@@ -9,7 +9,16 @@ import { ToastService } from '../toast.service';
 import { ConfirmService } from '../confirm.service';
 import { ActionsMenuComponent, ActionItem } from '../actions-menu.component';
 
-const SEGMENTS = ['REGULAR', 'VIP', 'WHOLESALE'];
+const SEGMENTS = [
+  { v: 'REGULAR', l: 'Regular' },
+  { v: 'VIP', l: 'VIP (Preferencial)' },
+  { v: 'WHOLESALE', l: 'Mayorista' },
+];
+const SEGMENT_LABEL: Record<string, string> = {
+  REGULAR: 'Regular',
+  VIP: 'VIP (Preferencial)',
+  WHOLESALE: 'Mayorista',
+};
 
 @Component({
   selector: 'app-clients',
@@ -19,7 +28,7 @@ const SEGMENTS = ['REGULAR', 'VIP', 'WHOLESALE'];
     <div class="toolbar">
       <h2 class="sec" style="margin:0">Clientes y Segmentación IA</h2>
       <div class="grow"></div>
-      <input [(ngModel)]="search" placeholder="Buscar nombre o email…" style="width:230px" />
+      <input [(ngModel)]="search" placeholder="Buscar nombre o correo…" style="width:230px" />
       <button class="btn btn-ghost" (click)="runClustering()" [disabled]="clustering">
         {{ clustering ? 'Segmentando con IA…' : 'Segmentar Cartera con IA' }}
       </button>
@@ -55,14 +64,14 @@ const SEGMENTS = ['REGULAR', 'VIP', 'WHOLESALE'];
 
     <div class="card">
       <table>
-        <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Dirección</th><th>Segmento</th><th style="width:60px"></th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Correo electrónico</th><th>Teléfono</th><th>Dirección</th><th>Segmento</th><th style="width:60px"></th></tr></thead>
         <tbody>
           <tr *ngFor="let c of filtered()">
             <td><strong>{{ c.name }}</strong></td>
             <td>{{ c.email }}</td>
             <td>{{ c.phone || '—' }}</td>
             <td>{{ c.address || '—' }}</td>
-            <td><span class="badge" [class]="'badge ' + (c.segment === 'VIP' ? 'st-READY' : c.segment === 'WHOLESALE' ? 'st-QUOTED' : 'st-DRAFT')">{{ c.segment || 'REGULAR' }}</span></td>
+            <td><span class="badge" [class]="'badge ' + (c.segment === 'VIP' ? 'st-READY' : c.segment === 'WHOLESALE' ? 'st-QUOTED' : 'st-DRAFT')">{{ segLabel(c.segment) }}</span></td>
             <td><app-actions-menu [items]="actionsOf(c)" /></td>
           </tr>
           <tr *ngIf="!filtered().length"><td colspan="6" class="empty-note">Sin resultados.</td></tr>
@@ -78,12 +87,12 @@ const SEGMENTS = ['REGULAR', 'VIP', 'WHOLESALE'];
           <form [formGroup]="form" (ngSubmit)="save()">
             <div class="modal-body form-grid">
               <label class="f full">Nombre *<input formControlName="name" /></label>
-              <label class="f">Email *<input formControlName="email" type="email" /></label>
+              <label class="f">Correo electrónico *<input formControlName="email" type="email" /></label>
               <label class="f">Teléfono<input formControlName="phone" /></label>
               <label class="f">Dirección<input formControlName="address" /></label>
               <label class="f">Segmento
                 <select formControlName="segment">
-                  <option *ngFor="let s of segments" [value]="s">{{ s }}</option>
+                  <option *ngFor="let s of segments" [value]="s.v">{{ s.l }}</option>
                 </select>
               </label>
             </div>
@@ -127,6 +136,10 @@ export class ClientsComponent implements OnInit {
   ngOnInit(): void {
     this.ref = this.apollo.watchQuery<{ clients: any[] }>({ query: CLIENTS });
     this.ref.valueChanges.subscribe(({ data }) => (this.clients = data.clients));
+  }
+
+  segLabel(s?: string): string {
+    return SEGMENT_LABEL[s || 'REGULAR'] ?? (s || 'Regular');
   }
 
   filtered(): any[] {

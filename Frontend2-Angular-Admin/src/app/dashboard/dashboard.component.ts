@@ -18,7 +18,7 @@ interface Alert { level: 'red' | 'amber' | 'blue'; text: string; }
   imports: [CommonModule],
   template: `
     <div class="toolbar">
-      <h2 class="sec" style="margin:0">Dashboard</h2>
+      <h2 class="sec" style="margin:0">Panel General</h2>
       <div class="grow"></div>
       <button class="btn btn-ghost btn-sm" (click)="load()">Actualizar</button>
     </div>

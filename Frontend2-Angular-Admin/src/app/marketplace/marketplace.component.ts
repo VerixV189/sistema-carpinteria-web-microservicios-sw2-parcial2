@@ -16,7 +16,7 @@ import { ConfirmService } from '../confirm.service';
   template: `
     <div class="head">
       <div>
-        <h2>Marketplace de Muebles Disponibles</h2>
+        <h2>Tienda de Muebles Disponibles</h2>
         <p class="sub">
           Publica, edita y controla el stock de los muebles en venta directa (fotos almacenadas en AWS S3).
         </p>
@@ -106,7 +106,7 @@ import { ConfirmService } from '../confirm.service';
       <div class="modal-backdrop" (click)="modalOpen = false">
         <div class="modal" (click)="$event.stopPropagation()">
           <div class="modal-head">
-            <h3>{{ editing ? 'Editar Mueble' : 'Publicar Mueble en Marketplace' }}</h3>
+            <h3>{{ editing ? 'Editar Mueble' : 'Publicar Mueble en Tienda' }}</h3>
             <button class="x" (click)="modalOpen = false">✕</button>
           </div>
           <form (ngSubmit)="save()" class="modal-body">

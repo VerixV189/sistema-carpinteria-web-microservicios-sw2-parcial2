@@ -11,9 +11,9 @@ const NET_FAIL_KEY = 'carpinteria_net_failed';
 const EVT = 'carpinteria:network-change';
 
 const KEYS = {
-  carpenters: 'carpinteria_cache_carpenters',
-  orders: 'carpinteria_cache_orders',
-  deliveries: 'carpinteria_cache_deliveries',
+  carpenters: 'carpinteria_taller_cache_carpenters',
+  orders: 'carpinteria_taller_cache_orders',
+  deliveries: 'carpinteria_taller_cache_deliveries',
   products: 'carpinteria_cache_products',
 };
 
