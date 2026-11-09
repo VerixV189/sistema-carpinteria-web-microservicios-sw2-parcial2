@@ -124,6 +124,12 @@ public class OrderResolver {
     }
 
     @DgsMutation
+    public OrderResponse addProductionStep(@InputArgument long orderId,
+                                           @InputArgument String name) {
+        return updateOrderStatus.addProductionStep(orderId, name);
+    }
+
+    @DgsMutation
     public OrderResponse linkQuotation(@InputArgument long orderId,
                                        @InputArgument String quotationId) {
         return updateOrderStatus.linkQuotation(orderId, quotationId);

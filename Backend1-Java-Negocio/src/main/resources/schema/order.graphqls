@@ -101,6 +101,7 @@ extend type Mutation {
   updateOrderStatus(id: ID!, status: OrderStatus!): Order
   assignCarpenter(orderId: ID!, carpenterId: ID!): Order
   updateStepStatus(stepId: ID!, status: StepStatus!): ProductionStep
+  addProductionStep(orderId: ID!, name: String!): Order
   linkQuotation(orderId: ID!, quotationId: String!): Order
   setDeliveryPreference(orderId: ID!, input: DeliveryPreferenceInput!): Order
 }

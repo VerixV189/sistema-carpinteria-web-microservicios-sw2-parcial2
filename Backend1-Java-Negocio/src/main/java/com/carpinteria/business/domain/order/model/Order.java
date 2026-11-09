@@ -72,6 +72,28 @@ public class Order {
 
     public void assignCarpenter(long carpenterId) {
         carpenterIds.add(carpenterId);
+        ensureDefaultSteps();
+        this.updatedAt = Instant.now();
+    }
+
+    public void ensureDefaultSteps() {
+        if (this.steps == null) {
+            this.steps = new ArrayList<>();
+        }
+        if (this.steps.isEmpty()) {
+            this.steps.add(new ProductionStep(null, "Corte y preparación de madera", StepStatus.PENDING, 1, null));
+            this.steps.add(new ProductionStep(null, "Armado y ensamblado de estructura", StepStatus.PENDING, 2, null));
+            this.steps.add(new ProductionStep(null, "Lijado, barnizado y acabado final", StepStatus.PENDING, 3, null));
+            this.updatedAt = Instant.now();
+        }
+    }
+
+    public void addStep(String name) {
+        if (this.steps == null) {
+            this.steps = new ArrayList<>();
+        }
+        int nextSeq = this.steps.stream().mapToInt(ProductionStep::getSequence).max().orElse(0) + 1;
+        this.steps.add(new ProductionStep(null, name.trim(), StepStatus.PENDING, nextSeq, null));
         this.updatedAt = Instant.now();
     }
 

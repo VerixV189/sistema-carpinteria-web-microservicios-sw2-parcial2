@@ -51,6 +51,13 @@ public class UpdateOrderStatusUseCase {
         return repository.updateStep(stepId, status).orElse(null);
     }
 
+    public OrderResponse addProductionStep(long orderId, String name) {
+        Order order = repository.findById(orderId).orElse(null);
+        if (order == null || name == null || name.isBlank()) return null;
+        order.addStep(name);
+        return OrderResponse.from(repository.save(order));
+    }
+
     public OrderResponse linkQuotation(long orderId, String quotationId) {
         Order order = repository.findById(orderId).orElse(null);
         if (order == null) return null;

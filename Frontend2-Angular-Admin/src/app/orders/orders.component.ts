@@ -6,7 +6,7 @@ import { Apollo, QueryRef } from 'apollo-angular';
 import { Subscription } from 'rxjs';
 import {
   ORDERS, CLIENTS, CARPENTERS, CREATE_ORDER, UPDATE_ORDER_STATUS,
-  ASSIGN_CARPENTER, UPDATE_STEP_STATUS, LINK_QUOTATION, ORDER_STATUS_CHANGED,
+  ASSIGN_CARPENTER, UPDATE_STEP_STATUS, ADD_PRODUCTION_STEP, LINK_QUOTATION, ORDER_STATUS_CHANGED,
 } from '../graphql.operations';
 import { ToastService } from '../toast.service';
 import { ConfirmService } from '../confirm.service';
@@ -24,6 +24,18 @@ const NEXT: Record<string, string[]> = {
 };
 const NEXT_STEP: Record<string, string> = { PENDING: 'IN_PROGRESS', IN_PROGRESS: 'COMPLETED', COMPLETED: '' };
 const WOOD_TYPES = ['PINO', 'CEDRO', 'ROBLE', 'MARA', 'MELAMINA', 'OTRO'];
+const FURNITURE_ES: Record<string, string> = {
+  TABLE: 'Mesa',
+  CHAIR: 'Silla',
+  WARDROBE: 'Ropero',
+  DOOR: 'Puerta',
+  WINDOW: 'Ventana',
+  BED: 'Cama',
+  KITCHEN: 'Cocina',
+  SHELF: 'Estante',
+  DESK: 'Escritorio',
+  OTHER: 'Mueble a medida',
+};
 
 @Component({
   selector: 'app-orders',
@@ -93,7 +105,7 @@ const WOOD_TYPES = ['PINO', 'CEDRO', 'ROBLE', 'MARA', 'MELAMINA', 'OTRO'];
               <thead><tr><th>Descripción</th><th>Tipo</th><th>Madera</th><th>Cant.</th><th>P. unit.</th></tr></thead>
               <tbody>
                 <tr *ngFor="let it of detail.items">
-                  <td>{{ it.description }}</td><td>{{ it.furnitureType || '—' }}</td><td>{{ it.woodType || '—' }}</td>
+                  <td>{{ it.description }}</td><td>{{ furnitureLabel(it.furnitureType) }}</td><td>{{ it.woodType || '—' }}</td>
                   <td>{{ it.quantity }}</td><td>Bs. {{ it.unitPrice }}</td>
                 </tr>
               </tbody>
@@ -101,8 +113,19 @@ const WOOD_TYPES = ['PINO', 'CEDRO', 'ROBLE', 'MARA', 'MELAMINA', 'OTRO'];
             <p *ngIf="!detail.items?.length" class="empty-note">Sin ítems registrados.</p>
 
             <!-- Pasos de producción -->
-            <h3 class="sub">Pasos de producción</h3>
-            <table *ngIf="detail.steps?.length" style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <h3 class="sub" style="margin-bottom:6px">Pasos de producción ({{ detail.steps?.length || 0 }})</h3>
+              <button
+                *ngIf="!detail.steps?.length"
+                type="button"
+                class="btn btn-sm"
+                (click)="generateDefaultSteps()"
+                [disabled]="saving"
+              >
+                ⚡ Generar 3 pasos estándar de taller
+              </button>
+            </div>
+            <table *ngIf="detail.steps?.length" style="margin-bottom:10px">
               <thead><tr><th>#</th><th>Paso</th><th>Estado</th><th></th></tr></thead>
               <tbody>
                 <tr *ngFor="let st of detail.steps">
@@ -116,7 +139,20 @@ const WOOD_TYPES = ['PINO', 'CEDRO', 'ROBLE', 'MARA', 'MELAMINA', 'OTRO'];
                 </tr>
               </tbody>
             </table>
-            <p *ngIf="!detail.steps?.length" class="empty-note">Sin pasos de producción.</p>
+            <p *ngIf="!detail.steps?.length" class="empty-note" style="margin-bottom:8px">
+              Este pedido aún no tiene pasos. Haz clic en «Generar 3 pasos estándar de taller» o escribe un paso abajo.
+            </p>
+            <div style="display:flex;gap:8px;margin-bottom:16px">
+              <input
+                [(ngModel)]="newStepName"
+                placeholder="Agregar paso al carpintero (ej.: Tallado de bordes, Barnizado poliuretano…)"
+                style="flex:1"
+                (keyup.enter)="addStep()"
+              />
+              <button class="btn btn-sm btn-ghost" (click)="addStep()" [disabled]="!newStepName.trim() || saving">
+                + Agregar paso
+              </button>
+            </div>
 
             <!-- Carpinteros asignados -->
             <h3 class="sub">Carpinteros</h3>
@@ -205,6 +241,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   saving = false;
   assignee: string | null = null;
   quotationId = '';
+  newStepName = '';
   woods = WOOD_TYPES;
   createForm: FormGroup;
   private ref?: QueryRef<{ orders: any[] }>;
@@ -248,6 +285,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   countOf(s: string): number { return this.orders.filter((o) => o.status === s).length; }
   label(s: string): string { return ORDER_STATUS[s] ?? s; }
   stepLabel(s: string): string { return STEP_STATUS[s] ?? s; }
+  furnitureLabel(t?: string): string { return t ? (FURNITURE_ES[t.toUpperCase()] ?? t) : '—'; }
   deliveryLabel(s: string): string { return DELIVERY_STATUS[s] ?? s; }
   nextStates(s: string): string[] { return NEXT[s] ?? []; }
   nextStep(s: string): string { return NEXT_STEP[s] ?? ''; }
@@ -277,6 +315,48 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.detail = o;
     this.assignee = null;
     this.quotationId = '';
+    this.newStepName = '';
+  }
+
+  addStep(customName?: string): void {
+    const name = (customName ?? this.newStepName).trim();
+    if (!this.detail || !name) return;
+    this.saving = true;
+    this.apollo.mutate({ mutation: ADD_PRODUCTION_STEP, variables: { orderId: this.detail.id, name } }).subscribe({
+      next: () => {
+        if (!customName) this.newStepName = '';
+        this.toast.ok(`Paso «${name}» agregado al pedido #${this.detail.id}`);
+        this.ref?.refetch();
+        this.saving = false;
+      },
+      error: (e) => { this.toast.fromError(e); this.saving = false; },
+    });
+  }
+
+  async generateDefaultSteps(): Promise<void> {
+    if (!this.detail) return;
+    const defaults = [
+      'Corte y preparación de madera',
+      'Armado y ensamblado de estructura',
+      'Lijado, barnizado y acabado final',
+    ];
+    this.saving = true;
+    try {
+      for (const name of defaults) {
+        await new Promise<void>((resolve, reject) => {
+          this.apollo.mutate({ mutation: ADD_PRODUCTION_STEP, variables: { orderId: this.detail.id, name } }).subscribe({
+            next: () => resolve(),
+            error: (err) => reject(err),
+          });
+        });
+      }
+      this.toast.ok('3 pasos estándar de taller asignados al pedido');
+      this.ref?.refetch();
+    } catch (e) {
+      this.toast.fromError(e);
+    } finally {
+      this.saving = false;
+    }
   }
 
   async setStatus(o: any, status: string): Promise<void> {

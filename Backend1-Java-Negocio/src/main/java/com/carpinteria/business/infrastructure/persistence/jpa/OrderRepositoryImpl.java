@@ -27,10 +27,18 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    @Transactional
     public List<Order> findAll(OrderStatus status) {
         List<OrderJpaEntity> entities =
                 status != null ? jpa.findByStatus(status.name()) : jpa.findAll();
-        return entities.stream().map(OrderJpaEntity::toDomain).toList();
+        return entities.stream().map(e -> {
+            Order d = e.toDomain();
+            if (d.getSteps().isEmpty()) {
+                d.ensureDefaultSteps();
+                return jpa.save(OrderJpaEntity.from(d)).toDomain();
+            }
+            return d;
+        }).toList();
     }
 
     @Override
@@ -66,9 +74,17 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    @Transactional
     public List<Order> ordersOfCarpenter(long carpenterId) {
         return orderCarpenterJpa.findByCarpenterId(carpenterId).stream()
-                .map(oc -> jpa.findById(oc.getOrderId()).map(OrderJpaEntity::toDomain).orElse(null))
+                .map(oc -> jpa.findById(oc.getOrderId()).map(e -> {
+                    Order d = e.toDomain();
+                    if (d.getSteps().isEmpty()) {
+                        d.ensureDefaultSteps();
+                        return jpa.save(OrderJpaEntity.from(d)).toDomain();
+                    }
+                    return d;
+                }).orElse(null))
                 .filter(o -> o != null)
                 .toList();
     }

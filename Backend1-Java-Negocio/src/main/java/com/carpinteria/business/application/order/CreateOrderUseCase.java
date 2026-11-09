@@ -48,6 +48,7 @@ public class CreateOrderUseCase {
 
         Order order = new Order(null, command.clientId(), command.quotationId(),
                 command.description(), null, items, null, null, null, null, null);
+        order.ensureDefaultSteps();
         order.setDeliveryType(DeliveryType.of(command.deliveryType()));
         order.setDeliveryAddress(command.deliveryAddress());
         order.setDeliveryLat(command.deliveryLat());

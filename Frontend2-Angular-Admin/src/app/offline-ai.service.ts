@@ -477,6 +477,21 @@ export class OfflineAiService {
         this.setOrders(list);
         return { assignCarpenter: { id: orderId, carpenters: [carp] } };
       }
+      case 'AddProductionStep': {
+        const orderId = String(variables['orderId']);
+        const name = String(variables['name'] ?? '').trim();
+        let updatedSteps: any[] = [];
+        const list = this.getOrders().map((o) => {
+          if (String(o.id) !== orderId) return o;
+          const prev = Array.isArray(o.steps) ? o.steps : [];
+          const nextSeq = prev.length + 1;
+          const newStep = { id: String(Date.now() + nextSeq), name, status: 'PENDING', sequence: nextSeq };
+          updatedSteps = [...prev, newStep];
+          return { ...o, steps: updatedSteps };
+        });
+        this.setOrders(list);
+        return { addProductionStep: { id: orderId, steps: updatedSteps } };
+      }
       case 'Deliveries':
         return { deliveries: this.getDeliveries() };
       case 'DeliveryCapacity':

@@ -77,6 +77,14 @@ export const UPDATE_STEP_STATUS = gql`
     updateStepStatus(stepId: $stepId, status: $status) { id status }
   }
 `;
+export const ADD_PRODUCTION_STEP = gql`
+  mutation AddProductionStep($orderId: ID!, $name: String!) {
+    addProductionStep(orderId: $orderId, name: $name) {
+      id
+      steps { id name status sequence }
+    }
+  }
+`;
 export const LINK_QUOTATION = gql`
   mutation LinkQuotation($orderId: ID!, $quotationId: String!) {
     linkQuotation(orderId: $orderId, quotationId: $quotationId) { id quotationId }
