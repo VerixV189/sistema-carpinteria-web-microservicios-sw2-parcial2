@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -84,16 +84,33 @@ const PALETTE = [
           {{ p }}
         </button>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input
-          [(ngModel)]="query"
-          placeholder="Ej.: ¿Cuáles son los mejores clientes?, ¿Qué muebles tienen stock bajo en la tienda?, ¿Qué pedidos están en fabricación?..."
-          style="flex:1;min-width:240px"
-          (keyup.enter)="ask()"
-        />
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="input-voice-wrap" style="flex:1;min-width:240px;display:flex;align-items:center;gap:6px;position:relative">
+          <input
+            [(ngModel)]="query"
+            [placeholder]="isListening ? '🎙️ Escuchando tu voz... habla ahora' : 'Ej.: ¿Cuáles son los mejores clientes?, ¿Qué muebles tienen stock bajo en la tienda?...'"
+            style="flex:1;width:100%"
+            [style.border-color]="isListening ? '#dc2626' : ''"
+            [style.box-shadow]="isListening ? '0 0 0 3px rgba(220,38,38,.15)' : ''"
+            (keyup.enter)="ask()"
+          />
+        </div>
+        <button
+          type="button"
+          class="btn-voice"
+          [class.listening]="isListening"
+          (click)="toggleVoiceInput()"
+          [title]="isListening ? 'Detener dictado por voz' : 'Dictar consulta de reporte con tu voz'"
+        >
+          <span class="mic-dot" *ngIf="isListening"></span>
+          {{ isListening ? '⏹️ Detener Voz' : '🎙️ Dictar con Voz' }}
+        </button>
         <button class="btn" (click)="ask()" [disabled]="loading">
           {{ loading ? 'Generando reporte…' : 'Generar Reporte' }}
         </button>
+      </div>
+      <div *ngIf="isListening || voiceStatus" class="voice-banner" [class.active]="isListening">
+        <span>{{ isListening ? '🎙️ Escuchando en español: di por ejemplo "Muéstrame los mejores clientes" o "Pedidos en producción"...' : voiceStatus }}</span>
       </div>
       <div *ngIf="errorMsg" style="margin-top:10px;color:#b91c1c;font-size:13px;font-weight:600">
         {{ errorMsg }}
@@ -119,6 +136,9 @@ const PALETTE = [
             </p>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" (click)="toggleSpeakNarrative()" title="Escuchar conclusión ejecutiva narrada por voz">
+              {{ isSpeaking ? '⏹️ Detener Lectura' : '🔊 Escuchar Conclusión' }}
+            </button>
             <button class="btn" (click)="exportPdf()" title="Generar reporte ejecutivo en PDF con gráficas listo para imprimir">
               📄 Descargar / Imprimir PDF
             </button>
@@ -459,9 +479,35 @@ const PALETTE = [
       display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700;
       background: #f2ebe1; color: #6e4720;
     }
+    .btn-voice {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 14px; border-radius: 8px; font-size: 13px; font-weight: 700;
+      border: 1.5px solid #8B5A2B; background: #FAF7F2; color: #6F4518;
+      cursor: pointer; transition: all .2s ease; white-space: nowrap;
+    }
+    .btn-voice:hover { background: #f0e6d8; }
+    .btn-voice.listening {
+      background: #fef2f2; border-color: #dc2626; color: #b91c1c;
+      box-shadow: 0 0 0 3px rgba(220,38,38,.18);
+    }
+    .mic-dot {
+      width: 9px; height: 9px; border-radius: 50%; background: #dc2626;
+      display: inline-block; animation: pulseMic 1s infinite ease-in-out;
+    }
+    @keyframes pulseMic {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.45); opacity: 0.45; }
+    }
+    .voice-banner {
+      margin-top: 8px; padding: 7px 12px; border-radius: 8px; font-size: 12.5px;
+      background: #f5efe6; color: #5c534a; border: 1px solid #e2d5c4;
+    }
+    .voice-banner.active {
+      background: #fef2f2; color: #991b1b; border-color: #fecaca; font-weight: 600;
+    }
   `],
 })
-export class ReportsComponent implements OnInit {
+export class ReportsComponent implements OnInit, OnDestroy {
   Math = Math;
   query = '';
   loading = false;
@@ -469,6 +515,12 @@ export class ReportsComponent implements OnInit {
   useLocalEngine = false;
   errorMsg = '';
   result: OfflineReportResult | null = null;
+
+  // — Soporte de Reconocimiento y Síntesis de Voz (Web Speech API) —
+  isListening = false;
+  isSpeaking = false;
+  voiceStatus = '';
+  private recognition: any = null;
 
   chartType: ChartType = 'bar';
   numericColumns: string[] = [];
@@ -505,12 +557,150 @@ export class ReportsComponent implements OnInit {
     private auth: AuthService,
     private apollo: Apollo,
     private api: ApiService,
+    private zone: NgZone,
     public offlineAi: OfflineAiService,
   ) {}
 
   ngOnInit(): void {
     this.query = this.presets[0];
     this.syncLiveData(false);
+  }
+
+  ngOnDestroy(): void {
+    this.stopVoiceInput();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  /**
+   * Inicia o detiene el reconocimiento de voz en español usando Web Speech API
+   * (`SpeechRecognition` / `webkitSpeechRecognition`). Al terminar de hablar,
+   * ejecuta automáticamente `ask()` para generar el reporte dinámico.
+   */
+  toggleVoiceInput(): void {
+    if (this.isListening) {
+      this.stopVoiceInput();
+      return;
+    }
+
+    const w = typeof window !== 'undefined' ? (window as any) : null;
+    const SpeechRecognition = w?.SpeechRecognition || w?.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      this.errorMsg =
+        'Tu navegador no soporta reconocimiento de voz nativo. Usa Google Chrome o Microsoft Edge.';
+      return;
+    }
+
+    this.errorMsg = '';
+    this.voiceStatus = '';
+
+    try {
+      const rec = new SpeechRecognition();
+      rec.lang = 'es-BO';
+      rec.continuous = false;
+      rec.interimResults = true;
+      rec.maxAlternatives = 1;
+
+      let finalTranscript = '';
+
+      rec.onstart = () => {
+        this.zone.run(() => {
+          this.isListening = true;
+          this.voiceStatus = '';
+        });
+      };
+
+      rec.onresult = (event: any) => {
+        this.zone.run(() => {
+          let interim = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interim += transcript;
+            }
+          }
+          const currentText = (finalTranscript || interim).trim();
+          if (currentText) {
+            this.query = currentText;
+          }
+        });
+      };
+
+      rec.onerror = (event: any) => {
+        this.zone.run(() => {
+          this.isListening = false;
+          if (event?.error === 'not-allowed') {
+            this.errorMsg = 'Permiso de micrófono denegado. Habilita el micrófono en la barra del navegador.';
+          } else if (event?.error === 'no-speech') {
+            this.voiceStatus = 'No se detectó voz. Intenta hablar más cerca del micrófono.';
+          } else {
+            this.errorMsg = `Error de reconocimiento de voz: ${event?.error || 'desconocido'}`;
+          }
+        });
+      };
+
+      rec.onend = () => {
+        this.zone.run(() => {
+          this.isListening = false;
+          if (this.query && this.query.trim().length > 2) {
+            this.voiceStatus = `✅ Consulta por voz reconocida: "${this.query}"`;
+            this.ask();
+          }
+        });
+      };
+
+      this.recognition = rec;
+      rec.start();
+    } catch {
+      this.isListening = false;
+      this.errorMsg = 'No se pudo iniciar el micrófono.';
+    }
+  }
+
+  stopVoiceInput(): void {
+    if (this.recognition) {
+      try {
+        this.recognition.stop();
+      } catch {
+        // ignore
+      }
+      this.recognition = null;
+    }
+    this.isListening = false;
+  }
+
+  /**
+   * Lee en voz alta la Conclusión Ejecutiva del reporte usando SpeechSynthesis en español.
+   */
+  toggleSpeakNarrative(): void {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (this.isSpeaking) {
+      window.speechSynthesis.cancel();
+      this.isSpeaking = false;
+      return;
+    }
+    if (!this.result?.narrative) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(this.result.narrative);
+    utterance.lang = 'es-ES';
+    utterance.rate = 1.02;
+    utterance.onend = () => {
+      this.zone.run(() => {
+        this.isSpeaking = false;
+      });
+    };
+    utterance.onerror = () => {
+      this.zone.run(() => {
+        this.isSpeaking = false;
+      });
+    };
+    this.isSpeaking = true;
+    window.speechSynthesis.speak(utterance);
   }
 
   /**
