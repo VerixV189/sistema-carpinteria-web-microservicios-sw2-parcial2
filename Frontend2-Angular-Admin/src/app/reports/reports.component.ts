@@ -9,6 +9,7 @@ import { AuthService } from '../auth.service';
 import { ApiService } from '../api.service';
 import { CLIENTS, ORDERS, CARPENTERS, DELIVERIES } from '../graphql.operations';
 import { OfflineAiService, OfflineReportResult } from '../offline-ai.service';
+import { OfflineWhisperService, WhisperProgress } from '../offline-whisper.service';
 
 export type ChartType = 'bar' | 'pie' | 'line' | 'category';
 
@@ -54,6 +55,15 @@ const PALETTE = [
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span
           style="padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700"
+          [style.background]="whisperReady ? '#ede9fe' : '#f3f4f6'"
+          [style.color]="whisperReady ? '#5b21b6' : '#374151'"
+          [style.border]="whisperReady ? '1px solid #c4b5fd' : '1px solid #d1d5db'"
+          title="Modelo neuronal Whisper ONNX en WebAssembly (compatible con Brave, Firefox, Chrome, Edge y 100% Offline)"
+        >
+          {{ whisperReady ? '🎙️ Whisper ONNX Activo (Offline)' : '⏳ Whisper ONNX (' + whisperProgressPct + '%)' }}
+        </span>
+        <span
+          style="padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700"
           [style.background]="isLocalMode ? '#fef3c7' : '#dcfce7'"
           [style.color]="isLocalMode ? '#92400e' : '#166534'"
           [style.border]="isLocalMode ? '1px solid #f59e0b' : '1px solid #86efac'"
@@ -88,7 +98,7 @@ const PALETTE = [
         <div class="input-voice-wrap" style="flex:1;min-width:240px;display:flex;align-items:center;gap:6px;position:relative">
           <input
             [(ngModel)]="query"
-            [placeholder]="isListening ? '🎙️ Escuchando tu voz... habla ahora' : 'Ej.: ¿Cuáles son los mejores clientes?, ¿Qué muebles tienen stock bajo en la tienda?...'"
+            [placeholder]="isListening ? '🎙️ Grabando voz para Whisper ONNX... habla ahora' : 'Ej.: ¿Cuáles son los mejores clientes?, ¿Qué muebles tienen stock bajo en la tienda?...'"
             style="flex:1;width:100%"
             [style.border-color]="isListening ? '#dc2626' : ''"
             [style.box-shadow]="isListening ? '0 0 0 3px rgba(220,38,38,.15)' : ''"
@@ -99,18 +109,27 @@ const PALETTE = [
           type="button"
           class="btn-voice"
           [class.listening]="isListening"
+          [disabled]="isTranscribing"
           (click)="toggleVoiceInput()"
-          [title]="isListening ? 'Detener dictado por voz' : 'Dictar consulta de reporte con tu voz'"
+          [title]="isListening ? 'Detener grabación y transcribir con Whisper ONNX' : 'Dictar consulta por voz con modelo Whisper ONNX (funciona en Brave, Firefox, Chrome y Offline)'"
         >
           <span class="mic-dot" *ngIf="isListening"></span>
-          {{ isListening ? '⏹️ Detener Voz' : '🎙️ Dictar con Voz' }}
+          {{ isTranscribing ? '🧠 Transcribiendo…' : (isListening ? '⏹️ Detener y Transcribir' : '🎙️ Dictar con Voz (Whisper)') }}
         </button>
-        <button class="btn" (click)="ask()" [disabled]="loading">
+        <button class="btn" (click)="ask()" [disabled]="loading || isTranscribing">
           {{ loading ? 'Generando reporte…' : 'Generar Reporte' }}
         </button>
       </div>
-      <div *ngIf="isListening || voiceStatus" class="voice-banner" [class.active]="isListening">
-        <span>{{ isListening ? '🎙️ Escuchando en español: di por ejemplo "Muéstrame los mejores clientes" o "Pedidos en producción"...' : voiceStatus }}</span>
+      <div *ngIf="isListening || isTranscribing || voiceStatus" class="voice-banner" [class.active]="isListening || isTranscribing">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <span>{{ voiceStatus || '🎙️ Grabando audio 16 kHz para Whisper ONNX... habla ahora y presiona "Detener y Transcribir" (o haz una pausa al terminar).' }}</span>
+          <div *ngIf="isListening" style="display:flex;align-items:center;gap:8px;min-width:150px">
+            <span style="font-size:11px">Nivel voz:</span>
+            <div style="flex:1;height:8px;background:#fecaca;border-radius:999px;overflow:hidden;min-width:80px">
+              <div [style.width.%]="audioLevel" style="height:100%;background:#dc2626;transition:width .08s ease"></div>
+            </div>
+          </div>
+        </div>
       </div>
       <div *ngIf="errorMsg" style="margin-top:10px;color:#b91c1c;font-size:13px;font-weight:600">
         {{ errorMsg }}
@@ -516,11 +535,17 @@ export class ReportsComponent implements OnInit, OnDestroy {
   errorMsg = '';
   result: OfflineReportResult | null = null;
 
-  // — Soporte de Reconocimiento y Síntesis de Voz (Web Speech API) —
+  // — Soporte de Reconocimiento de Voz Offline-First con Modelo Whisper ONNX (WebAssembly) —
   isListening = false;
+  isTranscribing = false;
   isSpeaking = false;
+  whisperReady = false;
+  whisperProgressPct = 0;
+  audioLevel = 0;
   voiceStatus = '';
-  private recognition: any = null;
+  private hasSpokenInSession = false;
+  private silenceSince = 0;
+  private recordingStartMs = 0;
 
   chartType: ChartType = 'bar';
   numericColumns: string[] = [];
@@ -559,118 +584,134 @@ export class ReportsComponent implements OnInit, OnDestroy {
     private api: ApiService,
     private zone: NgZone,
     public offlineAi: OfflineAiService,
+    public whisper: OfflineWhisperService,
   ) {}
 
   ngOnInit(): void {
     this.query = this.presets[0];
     this.syncLiveData(false);
+    // Pre-cargar y cachear el modelo Whisper ONNX en segundo plano (igual que SplashPage en el móvil)
+    this.initWhisperInBackground();
   }
 
   ngOnDestroy(): void {
-    this.stopVoiceInput();
+    this.whisper.cancelRecording();
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
   }
 
+  private initWhisperInBackground(): void {
+    this.whisper
+      .initialize((p: WhisperProgress) => {
+        this.zone.run(() => {
+          this.whisperProgressPct = p.progressPct;
+          this.whisperReady = p.status === 'ready';
+        });
+      })
+      .then(() => {
+        this.zone.run(() => {
+          this.whisperReady = true;
+          this.whisperProgressPct = 100;
+        });
+      })
+      .catch(() => {
+        // Se reintentará al presionar el botón de micrófono
+      });
+  }
+
   /**
-   * Inicia o detiene el reconocimiento de voz en español usando Web Speech API
-   * (`SpeechRecognition` / `webkitSpeechRecognition`). Al terminar de hablar,
-   * ejecuta automáticamente `ask()` para generar el reporte dinámico.
+   * Inicia o detiene la grabación y transcripción con el modelo Whisper ONNX en WebAssembly.
+   * Funciona en todos los navegadores (Brave, Firefox, Chrome, Edge, Safari) y 100% Offline
+   * una vez cacheado el modelo en el navegador.
    */
-  toggleVoiceInput(): void {
+  async toggleVoiceInput(): Promise<void> {
+    if (this.isTranscribing) return;
+
     if (this.isListening) {
-      this.stopVoiceInput();
-      return;
-    }
-
-    const w = typeof window !== 'undefined' ? (window as any) : null;
-    const SpeechRecognition = w?.SpeechRecognition || w?.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      this.errorMsg =
-        'Tu navegador no soporta reconocimiento de voz nativo. Usa Google Chrome o Microsoft Edge.';
+      await this.finishAndTranscribeWhisper();
       return;
     }
 
     this.errorMsg = '';
-    this.voiceStatus = '';
+    this.voiceStatus = this.whisper.isReady
+      ? '🎙️ Grabando voz (PCM 16 kHz)... Habla ahora.'
+      : '⏳ Preparando modelo Whisper ONNX en el navegador...';
+    this.hasSpokenInSession = false;
+    this.silenceSince = 0;
+    this.recordingStartMs = Date.now();
+    this.audioLevel = 0;
 
     try {
-      const rec = new SpeechRecognition();
-      rec.lang = 'es-BO';
-      rec.continuous = false;
-      rec.interimResults = true;
-      rec.maxAlternatives = 1;
-
-      let finalTranscript = '';
-
-      rec.onstart = () => {
-        this.zone.run(() => {
-          this.isListening = true;
-          this.voiceStatus = '';
-        });
-      };
-
-      rec.onresult = (event: any) => {
-        this.zone.run(() => {
-          let interim = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
-            if (event.results[i].isFinal) {
-              finalTranscript += transcript;
-            } else {
-              interim += transcript;
+      await this.whisper.startRecording(
+        (p: WhisperProgress) => {
+          this.zone.run(() => {
+            this.whisperProgressPct = p.progressPct;
+            this.whisperReady = this.whisper.isReady;
+            this.voiceStatus = p.message;
+          });
+        },
+        (level: number) => {
+          this.zone.run(() => {
+            this.audioLevel = level;
+            const now = Date.now();
+            if (level >= 14) {
+              this.hasSpokenInSession = true;
+              this.silenceSince = 0;
+            } else if (this.hasSpokenInSession && now - this.recordingStartMs > 1500) {
+              if (!this.silenceSince) {
+                this.silenceSince = now;
+              } else if (now - this.silenceSince >= 2200 && this.isListening && !this.isTranscribing) {
+                // Auto-detener tras 2.2 segundos de silencio después de haber hablado
+                this.finishAndTranscribeWhisper();
+              }
             }
-          }
-          const currentText = (finalTranscript || interim).trim();
-          if (currentText) {
-            this.query = currentText;
-          }
-        });
-      };
-
-      rec.onerror = (event: any) => {
-        this.zone.run(() => {
-          this.isListening = false;
-          if (event?.error === 'not-allowed') {
-            this.errorMsg = 'Permiso de micrófono denegado. Habilita el micrófono en la barra del navegador.';
-          } else if (event?.error === 'no-speech') {
-            this.voiceStatus = 'No se detectó voz. Intenta hablar más cerca del micrófono.';
-          } else {
-            this.errorMsg = `Error de reconocimiento de voz: ${event?.error || 'desconocido'}`;
-          }
-        });
-      };
-
-      rec.onend = () => {
-        this.zone.run(() => {
-          this.isListening = false;
-          if (this.query && this.query.trim().length > 2) {
-            this.voiceStatus = `✅ Consulta por voz reconocida: "${this.query}"`;
-            this.ask();
-          }
-        });
-      };
-
-      this.recognition = rec;
-      rec.start();
-    } catch {
-      this.isListening = false;
-      this.errorMsg = 'No se pudo iniciar el micrófono.';
+          });
+        },
+      );
+      this.zone.run(() => {
+        this.isListening = true;
+        this.whisperReady = true;
+        this.recordingStartMs = Date.now();
+      });
+    } catch (err) {
+      this.zone.run(() => {
+        this.isListening = false;
+        this.errorMsg = `No se pudo iniciar la grabación para Whisper ONNX: ${(err as Error).message}`;
+      });
     }
   }
 
-  stopVoiceInput(): void {
-    if (this.recognition) {
-      try {
-        this.recognition.stop();
-      } catch {
-        // ignore
-      }
-      this.recognition = null;
-    }
+  private async finishAndTranscribeWhisper(): Promise<void> {
+    if (!this.isListening || this.isTranscribing) return;
     this.isListening = false;
+    this.isTranscribing = true;
+    this.audioLevel = 0;
+    this.voiceStatus = '🧠 Transcribiendo tu voz localmente con Whisper ONNX...';
+
+    try {
+      const transcript = await this.whisper.stopAndTranscribe((p: WhisperProgress) => {
+        this.zone.run(() => {
+          this.voiceStatus = p.message;
+        });
+      });
+
+      this.zone.run(() => {
+        this.isTranscribing = false;
+        if (transcript && transcript.trim().length > 1) {
+          this.query = transcript.trim();
+          this.voiceStatus = `✅ Transcrito con Whisper ONNX: "${this.query}"`;
+          this.ask();
+        } else {
+          this.voiceStatus = '⚠️ No se detectó voz clara. Intenta hablar un poco más cerca del micrófono.';
+        }
+      });
+    } catch (err) {
+      this.zone.run(() => {
+        this.isTranscribing = false;
+        this.errorMsg = `Error en transcripción Whisper ONNX: ${(err as Error).message}`;
+      });
+    }
   }
 
   /**
