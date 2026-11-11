@@ -21,7 +21,7 @@ public class GatewayIdentityFilter extends OncePerRequestFilter {
 
     private static final String INTERNAL_SECRET =
             System.getenv().getOrDefault("INTERNAL_SECRET", "carpinteria-internal-dev");
-    private static final List<String> PUBLIC_PATHS = List.of("/actuator/health");
+    private static final List<String> PUBLIC_PATHS = List.of("/actuator/health", "/graphiql", "/favicon.ico");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
