@@ -129,14 +129,19 @@ export class ApiService {
   }
 
   /** CU1 — Segmentación inteligente de clientes (X-Means / K-Means en Python IA o IA Local Offline). */
-  async clusterClients(): Promise<ClusterClientsResponse> {
+  async clusterClients(clients?: any[], orders?: any[]): Promise<ClusterClientsResponse> {
     try {
-      return await this.req<ClusterClientsResponse>('/api/ai/cluster-clients', {
+      const res = await this.req<ClusterClientsResponse>('/api/ai/cluster-clients', {
         method: 'POST',
-        body: '{}',
+        body: JSON.stringify({ clients: clients ?? [], orders: orders ?? [] }),
       });
+      const totalClustered = (res?.clusters ?? []).reduce((acc, c) => acc + (c.size ?? c.clientIds?.length ?? 0), 0);
+      if (!res?.clusters?.length || totalClustered === 0) {
+        return this.offlineAi.clusterClientsLocally(clients, orders);
+      }
+      return res;
     } catch {
-      return this.offlineAi.clusterClientsLocally();
+      return this.offlineAi.clusterClientsLocally(clients, orders);
     }
   }
 

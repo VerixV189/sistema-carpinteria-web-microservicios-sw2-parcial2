@@ -45,14 +45,27 @@ def cluster_clients(features: list[ClientFeatures], max_k: int = 5) -> list[Clie
             "total_spent": round(float(np.mean([m.total_spent for m in members])), 2),
             "recency_days": round(float(np.mean([m.recency_days for m in members])), 2),
         }
-        # Etiqueta heurística: gasto alto + recencia baja → VALIOSOS/VIP
-        spent_rank = centroid["total_spent"]
-        label = LABELS[min(c, len(LABELS) - 1)]
-        if spent_rank > 15000:
-            label = "VIP"
-        elif centroid["recency_days"] > 90:
-            label = "EN RIESGO"
-        clusters.append(ClientCluster(c, label, [m.client_id for m in members], centroid, len(members)))
+        clusters.append(ClientCluster(c, "ESTÁNDAR", [m.client_id for m in members], centroid, len(members)))
+
+    # Ordenar de mayor a menor gasto promedio y asignar etiquetas RFM claras
+    clusters.sort(key=lambda cl: (cl.centroid.get("total_spent", 0), cl.centroid.get("total_orders", 0)), reverse=True)
+    ranked_labels = [
+        "VIP / ALTO VALOR",
+        "VALIOSOS / FRECUENTES",
+        "REGULARES / ESTÁNDAR",
+        "NUEVOS / OCASIONALES",
+        "EN RIESGO",
+    ]
+    for idx, cl in enumerate(clusters):
+        cl.cluster_id = idx
+        spent = cl.centroid.get("total_spent", 0)
+        recency = cl.centroid.get("recency_days", 0)
+        if idx == 0 and spent >= 5000:
+            cl.label = "VIP / ALTO VALOR"
+        elif recency > 120 and idx == len(clusters) - 1:
+            cl.label = "EN RIESGO"
+        else:
+            cl.label = ranked_labels[min(idx, len(ranked_labels) - 1)]
     return clusters
 
 

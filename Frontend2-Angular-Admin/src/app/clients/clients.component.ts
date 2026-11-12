@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { Apollo, QueryRef } from 'apollo-angular';
-import { CLIENTS, CREATE_CLIENT, UPDATE_CLIENT, DELETE_CLIENT } from '../graphql.operations';
+import { CLIENTS, ORDERS, CREATE_CLIENT, UPDATE_CLIENT, DELETE_CLIENT } from '../graphql.operations';
 import { ApiService, ClientCluster } from '../api.service';
 import { ToastService } from '../toast.service';
 import { ConfirmService } from '../confirm.service';
@@ -112,6 +112,7 @@ const SEGMENT_LABEL: Record<string, string> = {
 })
 export class ClientsComponent implements OnInit {
   clients: any[] = [];
+  orders: any[] = [];
   segments = SEGMENTS;
   search = '';
   form: FormGroup;
@@ -140,7 +141,10 @@ export class ClientsComponent implements OnInit {
 
   ngOnInit(): void {
     this.ref = this.apollo.watchQuery<{ clients: any[] }>({ query: CLIENTS });
-    this.ref.valueChanges.subscribe(({ data }) => (this.clients = data.clients));
+    this.ref.valueChanges.subscribe(({ data }) => (this.clients = data?.clients ?? []));
+    this.apollo
+      .watchQuery<{ orders: any[] }>({ query: ORDERS })
+      .valueChanges.subscribe(({ data }) => (this.orders = data?.orders ?? []));
   }
 
   segLabel(s?: string): string {
@@ -156,7 +160,7 @@ export class ClientsComponent implements OnInit {
   async runClustering(): Promise<void> {
     this.clustering = true;
     try {
-      const res = await this.api.clusterClients();
+      const res = await this.api.clusterClients(this.clients, this.orders);
       this.clusterAlgorithm = res.algorithm || 'X-Means (K-Means + silhouette)';
       this.clusters = res.clusters ?? [];
       this.toast.ok(`Segmentación IA completada (${this.clusters.length} grupos)`);

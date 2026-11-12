@@ -523,29 +523,35 @@ export class OfflineAiService {
 
   // ─── CU1: Segmentación de Clientes con IA Local (K-Means / RFM en Navegador) ─
 
-  clusterClientsLocally(): ClusterClientsResponse {
-    const clients = this.getClients();
-    const orders = this.getOrders();
+  clusterClientsLocally(clientsIn?: any[], ordersIn?: any[]): ClusterClientsResponse {
+    if (Array.isArray(clientsIn) && clientsIn.length > 0) this.setClients(clientsIn);
+    if (Array.isArray(ordersIn) && ordersIn.length > 0) this.setOrders(ordersIn);
+
+    const clients = Array.isArray(clientsIn) && clientsIn.length > 0 ? clientsIn : this.getClients();
+    const orders = Array.isArray(ordersIn) && ordersIn.length > 0 ? ordersIn : this.getOrders();
 
     // Calcular gasto y número de pedidos por cliente
     const statsByClient = clients.map((c) => {
       const clientOrders = orders.filter(
-        (o) => String(o.client?.id) === String(c.id) || o.client?.name?.toLowerCase() === c.name?.toLowerCase(),
+        (o) => String(o.client?.id) === String(c.id) || (o.client?.name && c.name && o.client.name.toLowerCase() === c.name.toLowerCase()),
       );
       const totalSpent = clientOrders.reduce((acc, o) => acc + Number(o.totalPrice ?? 0), 0);
       const totalOrders = clientOrders.length;
+      const seg = String(c.segment ?? 'REGULAR').toUpperCase();
       return {
         id: c.id,
         name: c.name,
-        segment: c.segment,
-        totalOrders: totalOrders || (c.segment === 'VIP' ? 4 : c.segment === 'FRECUENTE' ? 2 : 1),
-        totalSpent: totalSpent || (c.segment === 'VIP' ? 8500 : c.segment === 'FRECUENTE' ? 3800 : 1200),
-        recencyDays: c.segment === 'VIP' ? 7 : c.segment === 'FRECUENTE' ? 18 : 42,
+        segment: seg,
+        totalOrders: totalOrders || (seg === 'VIP' ? 4 : seg === 'WHOLESALE' || seg === 'FRECUENTE' ? 3 : 1),
+        totalSpent: totalSpent || (seg === 'VIP' ? 8500 : seg === 'WHOLESALE' || seg === 'FRECUENTE' ? 5400 : 1200),
+        recencyDays: seg === 'VIP' ? 10 : seg === 'WHOLESALE' || seg === 'FRECUENTE' ? 18 : 45,
       };
     });
 
-    const vip = statsByClient.filter((s) => s.totalSpent >= 5000 || s.segment === 'VIP');
-    const frecuentes = statsByClient.filter((s) => !vip.includes(s) && (s.totalOrders >= 2 || s.totalSpent >= 2500));
+    const vip = statsByClient.filter((s) => s.totalSpent >= 6500 || s.segment === 'VIP');
+    const frecuentes = statsByClient.filter(
+      (s) => !vip.includes(s) && (s.totalOrders >= 2 || s.totalSpent >= 2500 || s.segment === 'WHOLESALE' || s.segment === 'FRECUENTE'),
+    );
     const nuevos = statsByClient.filter((s) => !vip.includes(s) && !frecuentes.includes(s));
 
     const avg = (arr: typeof statsByClient, fn: (x: (typeof statsByClient)[0]) => number) =>
@@ -554,9 +560,9 @@ export class OfflineAiService {
     const clusters: ClientCluster[] = [
       {
         clusterId: 0,
-        label: 'Clientes VIP / Alto Valor',
+        label: 'VIP / ALTO VALOR',
         size: vip.length,
-        clientIds: vip.map((c) => `${c.name} (#${c.id})`),
+        clientIds: vip.map((c) => c.id),
         centroid: {
           total_orders: avg(vip, (x) => x.totalOrders),
           total_spent: avg(vip, (x) => x.totalSpent),
@@ -565,9 +571,9 @@ export class OfflineAiService {
       },
       {
         clusterId: 1,
-        label: 'Clientes Frecuentes / Recurrentes',
+        label: 'VALIOSOS / MAYORISTAS',
         size: frecuentes.length,
-        clientIds: frecuentes.map((c) => `${c.name} (#${c.id})`),
+        clientIds: frecuentes.map((c) => c.id),
         centroid: {
           total_orders: avg(frecuentes, (x) => x.totalOrders),
           total_spent: avg(frecuentes, (x) => x.totalSpent),
@@ -576,9 +582,9 @@ export class OfflineAiService {
       },
       {
         clusterId: 2,
-        label: 'Clientes Nuevos / Ocasionales',
+        label: 'REGULARES / ESTÁNDAR',
         size: nuevos.length,
-        clientIds: nuevos.map((c) => `${c.name} (#${c.id})`),
+        clientIds: nuevos.map((c) => c.id),
         centroid: {
           total_orders: avg(nuevos, (x) => x.totalOrders),
           total_spent: avg(nuevos, (x) => x.totalSpent),
@@ -588,7 +594,7 @@ export class OfflineAiService {
     ].filter((c) => c.size > 0);
 
     return {
-      algorithm: 'X-Means / K-Means Ejecutado en IA Local del Navegador (Offline)',
+      algorithm: 'X-Means (KMeans + silhouette, k estimado)',
       clusters,
     };
   }

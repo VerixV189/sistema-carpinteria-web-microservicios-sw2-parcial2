@@ -120,9 +120,17 @@ def delivery_check(date: str = Query(..., description="YYYY-MM-DD")):
     return check_delivery_date(date)
 
 
+class ClusterClientsRequest(BaseModel):
+    clients: list[dict] | None = None
+    orders: list[dict] | None = None
+
+
 @router.post("/cluster-clients")
-def cluster_clients():
-    return cluster_clients_usecase()
+def cluster_clients(req: ClusterClientsRequest | None = None):
+    return cluster_clients_usecase(
+        clients_in=req.clients if req else None,
+        orders_in=req.orders if req else None,
+    )
 
 
 @router.post("/report")
