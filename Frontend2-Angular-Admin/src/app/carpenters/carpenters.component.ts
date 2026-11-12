@@ -184,6 +184,7 @@ export class CarpentersComponent implements OnInit {
       next: async () => {
         await this.api.upsertUserAccount({
           email: v.email,
+          previousEmail: this.editing?.email,
           name: v.name,
           password: rawPassword || (this.editing ? undefined : 'carp123'),
           role: 'CARPENTER',

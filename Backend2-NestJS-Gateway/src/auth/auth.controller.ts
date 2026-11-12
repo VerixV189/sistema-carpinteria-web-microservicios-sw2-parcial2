@@ -39,6 +39,10 @@ export class UpsertStaffDto {
   @IsEmail()
   email!: string;
 
+  @IsOptional()
+  @IsEmail()
+  previousEmail?: string;
+
   @IsString()
   @MinLength(2)
   name!: string;
@@ -52,7 +56,7 @@ export class UpsertStaffDto {
   role?: 'CARPENTER' | 'CLIENT' | 'ADMIN';
 }
 
-@Controller('auth')
+@Controller(['auth', 'api/auth'])
 export class AuthController {
   constructor(
     private readonly auth: AuthService,

@@ -217,6 +217,7 @@ export class ClientsComponent implements OnInit {
       next: async () => {
         await this.api.upsertUserAccount({
           email: this.form.value.email,
+          previousEmail: this.editing?.email,
           name: this.form.value.name,
           password: rawPassword || (this.editing ? undefined : 'cliente123'),
           role: 'CLIENT',

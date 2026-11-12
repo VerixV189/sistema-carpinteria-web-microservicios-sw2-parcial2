@@ -267,17 +267,25 @@ export class ApiService {
 
   async upsertUserAccount(payload: {
     email: string;
+    previousEmail?: string;
     name: string;
     password?: string;
     role: 'CARPENTER' | 'CLIENT' | 'ADMIN';
   }): Promise<void> {
     try {
-      await this.req('/api/auth/register-user', {
+      await this.req('/auth/register-user', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
     } catch {
-      // Si está offline, el gateway aprovisionará la cuenta al primer login
+      try {
+        await this.req('/api/auth/register-user', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      } catch {
+        // Si está offline, el gateway aprovisionará la cuenta al primer login
+      }
     }
   }
 

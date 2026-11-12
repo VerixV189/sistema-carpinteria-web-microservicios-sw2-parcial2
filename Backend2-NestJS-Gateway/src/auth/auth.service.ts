@@ -59,19 +59,30 @@ export class AuthService {
    * Crea o actualiza la cuenta de acceso (contraseña y rol) de un Carpintero o Cliente
    * cuando el Administrador lo registra o edita desde el Panel Admin.
    */
-  async upsertUserAccount(dto: { email: string; name: string; password?: string; role?: User['role'] }) {
+  async upsertUserAccount(dto: {
+    email: string;
+    previousEmail?: string;
+    name: string;
+    password?: string;
+    role?: User['role'];
+  }) {
     const email = dto.email.trim().toLowerCase();
+    const prevEmail = dto.previousEmail?.trim().toLowerCase();
     const role: User['role'] = dto.role ?? 'CARPENTER';
     const rawPw = dto.password?.trim() || (role === 'CARPENTER' ? 'carp123' : 'cliente123');
-    const existing = await this.users.findByEmail(email);
+    const existing =
+      (await this.users.findByEmail(email)) ??
+      (prevEmail && prevEmail !== email ? await this.users.findByEmail(prevEmail) : undefined);
 
     if (existing) {
+      existing.email = email;
       existing.name = dto.name.trim() || existing.name;
       existing.role = role;
       if (dto.password?.trim()) {
         existing.password = bcrypt.hashSync(dto.password.trim(), 10);
       }
-      await this.users.update(existing);
+      await this.users.update(existing, prevEmail);
+      this.logger.log(`Cuenta actualizada para ${email} (${role})${dto.password?.trim() ? ' [contraseña actualizada]' : ''}`);
       return { id: existing.id, email: existing.email, name: existing.name, role: existing.role, updated: true };
     }
 
@@ -81,6 +92,7 @@ export class AuthService {
       password: bcrypt.hashSync(rawPw, 10),
       role,
     });
+    this.logger.log(`Cuenta creada para ${email} (${role})`);
     return { id: created.id, email: created.email, name: created.name, role: created.role, created: true };
   }
 
